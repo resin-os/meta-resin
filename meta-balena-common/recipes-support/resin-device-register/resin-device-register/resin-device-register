@@ -61,7 +61,7 @@ while true; do
                         --data-urlencode "device_type=$DEVICE_TYPE" \
                         --data-urlencode "uuid=$UUID" \
                         --data-urlencode "api_key=$DEVICE_API_KEY" \
-                        ${SUPERVISOR_TAG:+ --data-urlencode "supervisor_version=${SUPERVISOR_TAG}"} \
+                        ${SUPERVISOR_VERSION:+ --data-urlencode "supervisor_version=${SUPERVISOR_VERSION}"} \
                         "$API_ENDPOINT/device/register")
 
             if [ "$status_code" -eq 201 ]; then
