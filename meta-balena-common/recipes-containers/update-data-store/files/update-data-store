@@ -1,0 +1,287 @@
+#!/bin/bash
+
+set -e
+
+# shellcheck disable=SC1091
+. /usr/libexec/os-helpers-logging
+# shellcheck disable=SC1091
+. /usr/libexec/os-helpers-api
+
+ENGINE_OVERLAY_ROOT="/var/lib/docker/overlay2/"
+
+# Detect containers engine
+if which balena > /dev/null 2>&1; then
+    ENGINE=balena
+else
+    error "No container engine detected."
+fi
+
+readonly script_name=$(basename "${0}")
+usage() {
+	cat <<EOF
+Usage: ${script_name} [OPTIONS]
+	-t Target state json
+	-r Reboot after update
+EOF
+	exit 0
+}
+
+error_handler() {
+	# shellcheck disable=SC2181
+	[ $? -eq 0 ] && exit 0
+	exit 1
+}
+
+trap error_handler EXIT
+
+RESIN_DATA_DIR="/mnt/data"
+APPS_JSON_PATH="${RESIN_DATA_DIR}/apps.json"
+
+verify_target_images() {
+	local _target_images="${1}"
+	local _image
+	local _imageid
+	for _image in ${_target_images}; do
+		_imageid=$(${ENGINE} inspect -f '{{.Id}}' "${_image}" 2> /dev/null) || _imageid=""
+		if [ -n "${_imageid}" ]; then
+			continue
+		fi
+
+		if ! DOCKER_CLI_EXPERIMENTAL=enabled ${ENGINE} manifest inspect "${_image}"  > /dev/null 2>&1; then
+			error "Not found in repository - bailing out with no action taken: ${_image}"
+			return 1
+		fi
+	done
+}
+
+umount_merged() {
+	local _cid="${1}"
+	local _mergeddir
+	local _overlay
+	_mergeddir=$(${ENGINE} inspect -f '{{.GraphDriver.Data.MergedDir}}' "${_cid}" 2> /dev/null) || _mergeddir=""
+	if [ -n "${_mergeddir}" ]; then
+		_mergeddir=${_mergeddir#${ENGINE_OVERLAY_ROOT}}
+		_overlay=$(findmnt --noheadings --canonicalize  -t overlay -l -o TARGET | grep "${_mergeddir}" || true)
+		if [ -n "${_overlay}" ]; then
+			umount -l "${_overlay}" || true
+		fi
+	fi
+}
+
+remove_data_overlays() {
+	local _target_images="${1}"
+	local _image
+	local _oldimage
+	local _imagetag
+	local _cids
+	local _cid
+	info "Removing previous data store images"
+	for _image in $(${ENGINE} images --all --quiet --filter label="${BALENA_HOSTOS_BLOCK_STORE}=data" --filter label="${BALENA_HOSTOS_BLOCK_CLASS}=overlay"); do
+		# Skip tags
+		if [ "${_oldimage}" = "${_image}" ]; then
+			_oldimage="${_image}"
+			continue
+		fi
+		_oldimage="${_image}"
+		# Do not err if there is no repoDigest on images - might have been installed by older supervisor
+		_imagetag=$(${ENGINE} inspect "${_image}" --format='{{index .RepoDigests 0}}' 2>/dev/null || true)
+		_cids=$(${ENGINE} ps --all --quiet --no-trunc --filter ancestor="${_image}" | tr '\n' ' ')
+		if [ -n "${_imagetag}" ]; then
+			case "${_target_images}" in
+				*${_imagetag}*)
+					# If no container use the image do not preserve it
+					if [ -n "${_cids}" ]; then
+						info " - Preserving ${_imagetag}"
+						continue
+					fi
+					;;
+			esac
+		fi
+		for _cid in ${_cids}; do
+			umount_merged "${_cid}"
+			${ENGINE} rm --force --volumes "${_cid}" > /dev/null 2>&1 || true
+		done
+		${ENGINE} rmi --force "$_image" > /dev/null 2>&1 || true
+	done
+}
+
+update_current_images() {
+	local _current_images="${1}"
+	local _image="${2}"
+	if [ -z "${_current_images}" ]; then
+		_current_images="${_image}"
+	else
+		_current_images="${_current_images} ${_image}"
+	fi
+	echo "${_current_images}"
+}
+
+display_current_images() {
+	local _current_images="${1}"
+	local _reboot="${2}"
+	local _image
+	if [ -n "${_current_images}" ]; then
+		info "The following data stored images will be available on the next boot:"
+		for _image in ${_current_images}; do
+			info " - ${_image}"
+		done
+		if [ "${_reboot}" = 1 ]; then
+			info "Rebooting now."
+			reboot
+		fi
+	else
+		info "Nothing else to do"
+	fi
+}
+
+install_image() {
+	local _image="${1}"
+	local _service_name="${2}"
+	local _image_class="${3}"
+	local _image_store="${4}"
+	local _image_requires_reboot="${5}"
+	local _app_uuid="${6}"
+	local _app_id="${7}"
+	local _release_version="${8}"
+	local _current_images="${9}"
+	local _image
+	local _imageid
+	local _tag
+
+	info "[${_service_name}] - ${_image}"
+	_imageid=$(${ENGINE} inspect -f '{{.Id}}' "${_image}" 2> /dev/null) || _imageid=""
+	if [ -n "${_imageid}" ]; then
+		info "   - already installed"
+		_current_images=$(update_current_images "${_current_images}" "${_image}")
+		return 0
+	fi
+
+	if ! ${ENGINE} pull "${_image}"  > /dev/null 2>&1; then
+		error "   - failed to install"
+		return 1
+	else
+		if ! ${ENGINE} create --runtime="bare" --name "${_service_name}"\
+			--label "${BALENA_HOSTOS_BLOCK_CLASS}=${_image_class}" --label "${BALENA_HOSTOS_BLOCK_STORE}=${_image_store}" --label "${BALENA_HOSTOS_BLOCK_REQUIRES_REBOOT}=${_image_requires_reboot}" \
+			--label "${BALENA_HOSTOS_APP_UUID}=${_app_uuid}" --label "${BALENA_HOSTOS_APP_ID}=${_app_id}" --label "${BALENA_HOSTOS_RELEASE_VERSION}=${_release_version}" --label "${BALENA_HOSTOS_SERVICE_NAME}=${_service_name}" \
+			"${_image}" none  > /dev/null 2>&1; then
+				error "   - failed to spawn"
+				return 1
+		fi
+	fi
+	_imageid=$(${ENGINE} inspect -f '{{.Id}}' "${_image}" 2> /dev/null) || _imageid=""
+	_tag=$(echo "${_release_version}" | tr "+" "_")
+	${ENGINE} tag "${_imageid}" "${_service_name}:${_tag}"
+	_current_images=$(update_current_images "${_current_images}" "${_image}")
+	info "   - done"
+	echo "${_current_images}"
+}
+
+install_app() {
+	local _app_json="${1}"
+	local _current_images="${2}"
+	local _image_class="overlay"
+	local _image_store="data"
+	local _image_reboot_required="1"
+	local _target_images
+	local _app_uuid
+	local _app_id
+	local _release_version
+	local _image
+	local _os_version
+	local _service_name
+	local _app_name
+
+	_target_images=$( echo "${_app_json}" | jq --raw-output '.services[] | select(.labels."'"${BALENA_HOSTOS_BLOCK_CLASS}"'"=="'"${_image_class}"'") | select(.labels."'"${BALENA_HOSTOS_BLOCK_STORE}"'"=="'"${_image_store}"'") | select(.labels."'"${BALENA_HOSTOS_BLOCK_REQUIRES_REBOOT}"'"=="'"${_image_reboot_required}"'") | .image' | tr "\n" " ")
+	_app_uuid=$(echo "${_app_json}" | jq --raw-output '.uuid')
+	_app_id=$(echo "${_app_json}" | jq --raw-output '.appId')
+	_release_version=$(echo "${_app_json}" | jq --raw-output '.releaseVersion')
+	_app_name=$(echo "${_app_json}" | jq --raw-output '.name')
+
+	if [ "$(echo "${_app_uuid}" | wc -w)" != "1" ] || [ "$(echo "${_app_id}" | wc -w)" != "1" ] || [ "$(echo "${_release_version}" | wc -w)" != "1" ]; then
+		error "Target state must be from a single app - please iterate"
+		return 1
+	fi
+
+	if [ -n "${_target_images}" ]; then
+		info "[${_app_name}] Installing target images:"
+
+		_os_version=$(grep '\bVERSION\b'  < "/etc/os-release" | cut -d '=' -f2 | tr -d '"')
+		if [ "${_os_version}" != "${_release_version}" ]; then
+			warn "[${_app_name}] Requested installation of blocks with version ${_release_version} with current OS at ${_os_version}"
+		fi
+		for _image in ${_target_images}; do
+			_service_name=$(echo "${_app_json}" | jq --raw-output '.services[] | select(.image=="'"${_image}"'") | .serviceName')
+			_current_images=$(install_image "${_image}" "${_service_name}" "${_image_class}" "${_image_store}" "${_image_requires_reboot}" "${_app_uuid}" "${_app_id}" "${_release_version}" "${_current_images}")
+		done
+	else
+		info "[${_app_name}] No target images - nothing to do"
+		return 0
+	fi
+	echo "${_current_images}"
+}
+
+parse_target_state() {
+	local _target_state="${1}"
+	local _reboot="${2:-0}"
+	local _image_class="overlay"
+	local _image_store="data"
+	local _image_reboot_required="1"
+	local _apps_count
+	local _i=0
+	local _app_json
+	local _last
+	local _target_images
+	local _current_images=""
+
+	_apps_count=$(echo "${_target_state}" | jq ' .apps | length')
+	if [ "${_apps_count}" = "0" ]; then
+		error "No apps in target state"
+		return 1
+	fi
+
+	# Retrieve all target images in all target state
+	_target_images=$( echo "${_target_state}" | jq --raw-output '.apps[].services[] | select(.labels."'"${BALENA_HOSTOS_BLOCK_CLASS}"'"=="'"${_image_class}"'") | select(.labels."'"${BALENA_HOSTOS_BLOCK_STORE}"'"=="'"${_image_store}"'") | select(.labels."'"${BALENA_HOSTOS_BLOCK_REQUIRES_REBOOT}"'"=="'"${_image_reboot_required}"'") | .image' | tr "\n" " ")
+
+	if [ -z "${_target_images}" ]; then
+		info "No target images - nothing to do"
+		return 0
+	fi
+
+	# Make sure they are all installable
+	if ! verify_target_images "${_target_images}"; then
+		return 1
+	fi
+
+	#  Clean up current state
+	remove_data_overlays "${_target_images}"
+
+	_last=$((_apps_count - 1))
+	for _i in $(seq 0 "${_last}"); do
+		_app_json=$(echo "${_target_state}" | jq ".apps | to_entries | [.[].value] | .[${_i}]" )
+		_current_images=$(install_app "${_app_json}" "${_current_images}")
+	done
+	display_current_images "${_current_images}" "${_reboot}"
+}
+
+while getopts 'hrt:' flag; do
+	case "${flag}" in
+	r) reboot=1 ;;
+	t) target_state="${OPTARG}" ;;
+	h) usage ;;
+	*) error "Unexpected option ${flag}" ; usage ;;
+	esac
+done
+
+shift $#
+
+if [ -z "${target_state}" ]; then
+	if [ -f "${APPS_JSON_PATH}" ]; then
+		info "Using target state from ${APPS_JSON_PATH}"
+		target_state=$(cat "${APPS_JSON_PATH}")
+	else
+		error "No remote or local target state"
+		exit 1
+	fi
+fi
+
+parse_target_state "${target_state}" "${reboot}"
