@@ -1,4 +1,94 @@
 - commits:
+    - subject: 'recipes-connectivity: remove NetworkManager chronyd dependency'
+      hash: bae718785343233d9944156a884852d71d73cb79
+      body: |
+        Remove the chronyd dependency from the NetworkManager service
+        configuration.
+
+        The addition of the new 'timesync-https' service means that chronyd
+        will not be started until after full network connectivity has been
+        achieved, so we need to remove this old dependency.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Connects-to: '#1337 #2044'
+        connects-to: '#1337 #2044'
+        Changelog-entry: 'recipes-connectivity: remove NetworkManager chronyd dependency'
+        changelog-entry: 'recipes-connectivity: remove NetworkManager chronyd dependency'
+        Signed-off-by: Mark Corbin <mark@balena.io>
+        signed-off-by: Mark Corbin <mark@balena.io>
+      author: Mark Corbin
+      nested: []
+    - subject: 'systemd/timeinit: add new HTTPS time synchronisation service'
+      hash: 00bb85be5a671111917efca55976ccdeb3401dd1
+      body: |
+        Add a new 'timesync-https' systemd service to synchronise the system
+        time at boot using an HTTPS header. The service uses curl to request
+        an HTTPS header from https://api.balena-cloud.com/connectivity-check
+        The date field returned in the header is used to set the system time.
+
+        The service depends on the 'balena-connectivity-wait' service to
+        ensure that it only runs when full network connectivity is available.
+
+        The service will exit when either a valid response has been received
+        or a maximum number of attempts has been reached.
+
+        The service provides time synchronisation for devices where NTP is
+        blocked. For devices where NTP is available it should ensure that
+        the system 'time jump' is only a few seconds when NTP
+        synchronisation is achieved.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Connects-to: '#1337 #2044'
+        connects-to: '#1337 #2044'
+        Changelog-entry: 'systemd/timeinit: add new HTTPS time synchronisation service'
+        changelog-entry: 'systemd/timeinit: add new HTTPS time synchronisation service'
+        Signed-off-by: Mark Corbin <mark@balena.io>
+        signed-off-by: Mark Corbin <mark@balena.io>
+      author: Mark Corbin
+      nested: []
+    - subject: 'os-helpers: add support function for HTTPS header time'
+      hash: 031d2a9517112670348a85bba6691a54bbbd2c99
+      body: |
+        Add a helper function for manipulating date/time from an HTTPS header.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Connects-to: '#1337 #2044'
+        connects-to: '#1337 #2044'
+        Changelog-entry: 'os-helpers: add support function for HTTPS header time'
+        changelog-entry: 'os-helpers: add support function for HTTPS header time'
+        Signed-off-by: Mark Corbin <mark@balena.io>
+        signed-off-by: Mark Corbin <mark@balena.io>
+      author: Mark Corbin
+      nested: []
+    - subject: 'recipes-connectivity: add new recipe for network wait service'
+      hash: 86515ede441e708eff9e05ad2116b766154cdef9
+      body: |
+        Add a new 'balena-connectivity-wait' systemd service to wait for full
+        network connectivity at boot. The service makes use of the fixed HTTP
+        response code from https://api.balena-cloud.com/connectivity-check.
+        This page will return code 204 (No Content) which is used to
+        determine that we have full connectivity, i.e. internet is reachable
+        and DNS is configured.
+
+        The service can be used to prevent issues related to router delays
+        and captive portals.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Connects-to: '#1337 #2044'
+        connects-to: '#1337 #2044'
+        Changelog-entry: 'recipes-connectivity: add new recipe for network wait service'
+        changelog-entry: 'recipes-connectivity: add new recipe for network wait service'
+        Signed-off-by: Mark Corbin <mark@balena.io>
+        signed-off-by: Mark Corbin <mark@balena.io>
+      author: Mark Corbin
+      nested: []
+  version: 2.65.0
+  date: 2020-12-10T15:38:38.828Z
+- commits:
     - subject: 'meta-balena-common: kernel-resin: enable task-accounting by default'
       hash: d308c67666e612fad7e6bb7ac88d5bec2bfd8f9e
       body: ''

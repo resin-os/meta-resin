@@ -1,6 +1,14 @@
 Change log
 -----------
 
+# v2.65.0
+## (2020-12-10)
+
+* recipes-connectivity: remove NetworkManager chronyd dependency [Mark Corbin]
+* systemd/timeinit: add new HTTPS time synchronisation service [Mark Corbin]
+* os-helpers: add support function for HTTPS header time [Mark Corbin]
+* recipes-connectivity: add new recipe for network wait service [Mark Corbin]
+
 # v2.64.2
 ## (2020-12-10)
 
