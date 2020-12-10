@@ -1,6 +1,6 @@
 [Unit]
-Wants=resin-net-config.service bind-var-lib-NetworkManager.service chronyd.service
-After=resin-net-config.service bind-var-lib-NetworkManager.service chronyd.service
+Wants=resin-net-config.service bind-var-lib-NetworkManager.service
+After=resin-net-config.service bind-var-lib-NetworkManager.service
 
 [Service]
 ExecStartPre=/bin/systemd-tmpfiles --remove /etc/tmpfiles.d/nm-tmpfiles.conf

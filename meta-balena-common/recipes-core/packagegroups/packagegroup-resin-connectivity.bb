@@ -27,6 +27,7 @@ CONNECTIVITY_PACKAGES = " \
     resin-proxy-config \
     usb-modeswitch \
     iw \
+    balena-connectivity-wait \
     "
 
 RDEPENDS_${PN} = " \

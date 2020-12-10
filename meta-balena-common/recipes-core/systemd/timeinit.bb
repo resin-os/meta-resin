@@ -27,6 +27,8 @@ SRC_URI = " \
     file://fake-hwclock-update.timer \
     file://timeinit-rtc.service \
     file://timeinit-rtc.sh \
+    file://timesync-https.service \
+    file://timesync-https.sh \
     file://time-set.target \
     file://time-sync.conf \
     "
@@ -40,6 +42,7 @@ SYSTEMD_SERVICE_${PN} = " \
 	fake-hwclock-update.service \
 	fake-hwclock-update.timer \
 	timeinit-rtc.service \
+	timesync-https.service \
 	time-set.target \
 	"
 
@@ -51,12 +54,14 @@ do_install() {
     install -d ${D}${sysconfdir}/systemd/system/time-sync.target.d/
     install -m 0775 ${WORKDIR}/timeinit-buildtime.sh ${D}${bindir}
     install -m 0775 ${WORKDIR}/timeinit-rtc.sh ${D}${bindir}
+    install -m 0775 ${WORKDIR}/timesync-https.sh ${D}${bindir}
     install -m 0775 ${WORKDIR}/fake-hwclock ${D}${base_sbindir}
     install -m 0644 ${WORKDIR}/timeinit-buildtime.service ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/fake-hwclock.service ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/fake-hwclock-update.service ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/fake-hwclock-update.timer ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/timeinit-rtc.service ${D}${systemd_unitdir}/system
+    install -m 0644 ${WORKDIR}/timesync-https.service ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/time-set.target ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/time-sync.conf ${D}${sysconfdir}/systemd/system/time-sync.target.d/
 }
