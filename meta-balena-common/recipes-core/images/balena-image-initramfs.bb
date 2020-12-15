@@ -19,6 +19,7 @@ PACKAGE_INSTALL = " \
     initramfs-module-udev \
     initramfs-framework-base \
     udev \
+    mdadm \
     ${ROOTFS_BOOTSTRAP_INSTALL} \
     "
 

@@ -20,4 +20,5 @@ RDEPENDS_${PN} = " \
     os-config \
     os-release \
     less \
+    mdadm \
     "
