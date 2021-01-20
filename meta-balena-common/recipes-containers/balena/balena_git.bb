@@ -150,8 +150,10 @@ do_install() {
 	mkdir -p ${D}/usr/lib/balena
 	install -m 0755 ${WORKDIR}/balena-healthcheck ${D}/usr/lib/balena/balena-healthcheck
 
+  install -d ${D}${sysconfdir}/systemd/system/balena.service.d
+  install -c -m 0644 ${WORKDIR}/balena.conf.storagemigration ${D}${sysconfdir}/systemd/system/balena.service.d/storagemigration.conf
+
 	if ${@bb.utils.contains('DISTRO_FEATURES','development-image','true','false',d)}; then
-		install -d ${D}${sysconfdir}/systemd/system/balena.service.d
 		install -c -m 0644 ${WORKDIR}/balena.conf.systemd ${D}${sysconfdir}/systemd/system/balena.service.d/balena.conf
 		sed -i "s/@BALENA_STORAGE@/${BALENA_STORAGE}/g" ${D}${sysconfdir}/systemd/system/balena.service.d/balena.conf
 	fi
