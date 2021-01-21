@@ -6,6 +6,7 @@ SRC_URI = " \
 	file://Dockerfile \
 	file://entry.sh \
 	file://balena-apps.inc \
+	file://ca.crt \
 	"
 
 S = "${WORKDIR}"
@@ -40,6 +41,10 @@ do_compile () {
 		bbfatal "docker-disk: PARTITION_SIZE needs to have a value (megabytes)."
 	fi
 
+	if [ -n "${BALENA_CUSTOM_CA}" ]; then
+		cp "${BALENA_CUSTOM_CA}" ${WORKDIR}/ca.crt
+		no_cache="--no-cache"
+	fi
 	# At this point we really need internet connectivity for building the
 	# docker image
 	if [ "x${@connected(d)}" != "xyes" ]; then
@@ -57,7 +62,7 @@ do_compile () {
 	_image_name="docker-disk-$RANDOM"
 	_container_name="docker-disk-$RANDOM"
 	$DOCKER rmi -f ${_image_name} > /dev/null 2>&1 || true
-	$DOCKER build -t ${_image_name} -f ${WORKDIR}/Dockerfile ${WORKDIR}
+	$DOCKER build ${no_cache} -t ${_image_name} -f ${WORKDIR}/Dockerfile ${WORKDIR}
 	$DOCKER run --privileged --rm \
 		-e BALENA_STORAGE=${BALENA_STORAGE} \
 		-e USER_ID=$(id -u) -e USER_GID=$(id -u) \
