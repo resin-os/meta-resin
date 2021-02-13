@@ -1,4 +1,21 @@
 - commits:
+    - subject: Make sure u-boot is able to import an environment file
+      hash: 13263c2fbdb2bcd68c3263035ac595fa23d1faf4
+      body: |
+        BalenaOS requires the `env import` command to be available so make sure
+        to configure u-boot accordingly.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Changelog-entry: Make sure u-boot is able to import an environment file
+        changelog-entry: Make sure u-boot is able to import an environment file
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.70.3
+  date: 2021-02-13T22:02:44.702Z
+- commits:
     - subject: Update PR template to specify test coverage in more detail
       hash: ce0bb95e1d045ef32c377d4fc9de959c6ebbfd88
       body: >
