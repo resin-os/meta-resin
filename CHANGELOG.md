@@ -1,6 +1,11 @@
 Change log
 -----------
 
+# v2.70.3
+## (2021-02-13)
+
+* Make sure u-boot is able to import an environment file [Alex Gonzalez]
+
 # v2.70.2
 ## (2021-02-12)
 
