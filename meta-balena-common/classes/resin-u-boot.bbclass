@@ -63,6 +63,7 @@ UBOOT_VARS = "RESIN_UBOOT_DEVICES \
               OS_BOOTCOUNT_LIMIT \
               CONFIG_RESET_TO_RETRY \
               CONFIG_BOOT_RETRY_TIME \
+              CONFIG_CMD_IMPORTENV \
               CONFIG_CMD_FS_UUID "
 
 python do_generate_resin_uboot_configuration () {
