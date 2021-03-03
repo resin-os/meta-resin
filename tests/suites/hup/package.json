@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "balena-image-fs": "^7.0.6",
+    "bluebird": "^3.5.3",
+    "bluebird-retry": "^0.11.0",
+    "dockerode": "^2.5.8",
+    "fs-extra": "^8.1.0"
+  }
+}
