@@ -10,13 +10,15 @@ DOCKER=$(PATH="$HOST_PATH" which docker)
 
 sysroot="/"
 tmpdir=""
+fstype="ext4"
 
-while getopts 'i:o:s:t:' flag; do
+while getopts 'i:o:s:t:f:' flag; do
 	case "${flag}" in
         i) input=$(realpath "${OPTARG}") ;;
         o) output=$(realpath "${OPTARG}") ;;
         s) sysroot=$(realpath "${OPTARG}") ;;
         t) tmpdir=$(realpath "${OPTARG}") ;;
+        f) fstype="${OPTARG}" ;;
         *) error "Unexpected option ${flag}" ;;
 	esac
 done
@@ -40,7 +42,7 @@ cleanup_docker() {
     $DOCKER rmi @IMAGE@ || true
 }
 
-$DOCKER load -i "$sysroot/usr/share/mkfs-hostapp-ext4-image.tar"
+$DOCKER load -i "$sysroot/usr/share/mkfs-hostapp-image.tar"
 trap cleanup_docker EXIT
 
-$DOCKER run --privileged --rm -v "$input:/input:ro" -v "$tmpdir:$tmpdir:ro" -v "$output:/output" -e "PATH=$PATH:$HOST_PATH" @IMAGE@
+$DOCKER run --privileged --rm -v "$input:/input:ro" -v "$tmpdir:$tmpdir:ro" -v "$output:/output" -e "PATH=$PATH:$HOST_PATH" @IMAGE@ create.${fstype}

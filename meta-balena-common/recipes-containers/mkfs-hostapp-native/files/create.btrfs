@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -ex
+
+SYSROOT="/mnt/sysroot/inactive"
+MOUNT_TARGET=/mnt/dst
+COMPRESSION_ALGO="zstd"
+COMPRESSION_LEVEL="15" # 1-15, low to high
+MOUNT_OPTIONS="-o compress-force=$COMPRESSION_ALGO:$COMPRESSION_LEVEL"
+
+balenad -s=@BALENA_STORAGE@ --data-root="$SYSROOT/balena" -H unix:///var/run/balena-host.sock &
+pid=$!
+sleep 5
+
+hostapp-update -f /input -n
+
+kill $pid
+wait $pid
+
+mkdir -p $MOUNT_TARGET
+
+mkfs.btrfs -f /output
+mount /output $MOUNT_OPTIONS $MOUNT_TARGET
+rsync -a $SYSROOT/ $MOUNT_TARGET/
+# dedupe extents to save space
+duperemove -r -d $MOUNT_TARGET/
+umount $MOUNT_TARGET

@@ -75,6 +75,10 @@ python () {
         d.setVar('BALENA_STORAGE', docker_storage)
 }
 
+# Default filesystem
+BALENA_FSTYPE ?= "ext4"
+DISTRO_FEATURES_append = " ${BALENA_FSTYPE}"
+
 # Partition fingerprints files
 RESIN_FINGERPRINT_EXT ?= "fingerprint"
 RESIN_FINGERPRINT_FILENAME ?= "resinos"

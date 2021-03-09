@@ -62,7 +62,7 @@ inherit image_types
 #   +-------------------+
 #
 
-RESIN_ROOT_FSTYPE ?= "hostapp-ext4"
+RESIN_ROOT_FSTYPE ?= "hostapp-${BALENA_FSTYPE}"
 PARTITION_TABLE_TYPE ?= "msdos"
 
 python() {
@@ -72,12 +72,12 @@ python() {
         d.setVar('RESIN_ROOT_FS', '${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.${RESIN_ROOT_FSTYPE}')
         d.setVar('RESIN_RAW_IMG', '${IMGDEPLOYDIR}/${IMAGE_NAME}.rootfs.resinos-img')
         d.setVar('RESIN_DOCKER_IMG', '${IMGDEPLOYDIR}/${IMAGE_NAME}.rootfs.docker')
-        d.setVar('RESIN_HOSTAPP_IMG', '${IMGDEPLOYDIR}/${IMAGE_NAME}.rootfs.hostapp-ext4')
+        d.setVar('RESIN_HOSTAPP_IMG', '${IMGDEPLOYDIR}/${IMAGE_NAME}.rootfs.${RESIN_ROOT_FSTYPE}')
     else:
         d.setVar('RESIN_ROOT_FS', '${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.${RESIN_ROOT_FSTYPE}')
         d.setVar('RESIN_RAW_IMG', '${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.resinos-img')
         d.setVar('RESIN_DOCKER_IMG', '${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.docker')
-        d.setVar('RESIN_HOSTAPP_IMG', '${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.hostapp-ext4')
+        d.setVar('RESIN_HOSTAPP_IMG', '${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.${RESIN_ROOT_FSTYPE}')
 
     d.setVar('RESIN_IMAGE_BOOTLOADER_DEPLOY_TASK', ' '.join(bootloader + ':do_populate_sysroot' for bootloader in d.getVar("RESIN_IMAGE_BOOTLOADER", True).split()))
 }
@@ -225,7 +225,7 @@ IMAGE_CMD_resinos-img () {
 
     # resin-rootA
     if [ "${PARTITION_TABLE_TYPE}" = "msdos" ]; then
-        OPTS="primary ext4"
+        OPTS="primary"
     elif [ "${PARTITION_TABLE_TYPE}" = "gpt" ]; then
         OPTS="resin-rootA"
     fi
@@ -235,7 +235,7 @@ IMAGE_CMD_resinos-img () {
 
     # resin-rootB
     if [ "${PARTITION_TABLE_TYPE}" = "msdos" ]; then
-        OPTS="primary ext4"
+        OPTS="primary"
     elif [ "${PARTITION_TABLE_TYPE}" = "gpt" ]; then
         OPTS="resin-rootB"
     fi
@@ -253,7 +253,7 @@ IMAGE_CMD_resinos-img () {
 
     # resin-state
     if [ "${PARTITION_TABLE_TYPE}" = "msdos" ]; then
-        OPTS="logical ext4"
+        OPTS="logical"
     elif [ "${PARTITION_TABLE_TYPE}" = "gpt" ]; then
         OPTS="resin-state"
     fi
@@ -305,7 +305,14 @@ IMAGE_CMD_resinos-img () {
     fi
 
     # Label what is not labeled
-    e2label ${RESIN_ROOT_FS} ${RESIN_ROOTA_FS_LABEL}
+    if [ "${RESIN_ROOT_FSTYPE}" = "hostapp-ext4" ]; then
+        e2label ${RESIN_ROOT_FS} ${RESIN_ROOTA_FS_LABEL}
+    elif [ "${RESIN_ROOT_FSTYPE}" = "hostapp-btrfs" ]; then
+        btrfs fi label ${RESIN_ROOT_FS} ${RESIN_ROOTA_FS_LABEL}
+    else
+        bbfatal  "Rootfs labeling for type ${RESIN_ROOT_FSTYPE} has not been implemented!"
+    fi
+
     if [ -n "${RESIN_DATA_FS}" ]; then
         e2label ${RESIN_DATA_FS} ${RESIN_DATA_FS_LABEL}
     fi
@@ -363,5 +370,25 @@ do_image_hostapp_ext4[depends] = " \
 
 IMAGE_CMD_hostapp-ext4 () {
     dd if=/dev/zero of=${RESIN_HOSTAPP_IMG} seek=$ROOTFS_SIZE count=0 bs=1024
-    mkfs.hostapp-ext4 -t "${TMPDIR}" -s "${STAGING_DIR_NATIVE}" -i ${RESIN_DOCKER_IMG} -o ${RESIN_HOSTAPP_IMG}
+    mkfs.hostapp -f ext4 \
+                 -t "${TMPDIR}" \
+                 -s "${STAGING_DIR_NATIVE}" \
+                 -i ${RESIN_DOCKER_IMG} \
+                 -o ${RESIN_HOSTAPP_IMG}
+}
+
+IMAGE_TYPEDEP_hostapp-btrfs = "docker"
+
+do_image_hostapp_btrfs[depends] = " \
+    mkfs-hostapp-native:do_populate_sysroot \
+    btrfs-tools-native:do_populate_sysroot \
+    "
+
+IMAGE_CMD_hostapp-btrfs () {
+    dd if=/dev/zero of=${RESIN_HOSTAPP_IMG} seek=$ROOTFS_SIZE count=0 bs=1024
+    mkfs.hostapp -f btrfs \
+                 -t "${TMPDIR}" \
+                 -s "${STAGING_DIR_NATIVE}" \
+                 -i ${RESIN_DOCKER_IMG} \
+                 -o ${RESIN_HOSTAPP_IMG}
 }
