@@ -1,6 +1,11 @@
 Change log
 -----------
 
+# v2.73.6
+## (2021-04-08)
+
+* linux: Add out-of-tree module gb-netlink recipe [Kyle Harding]
+
 # v2.73.5
 ## (2021-04-06)
 

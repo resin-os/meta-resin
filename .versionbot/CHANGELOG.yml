@@ -1,4 +1,17 @@
 - commits:
+    - subject: 'linux: Add out-of-tree module gb-netlink recipe'
+      hash: af7dfab269c5620fed6128c6d30ba79e67f8b1d8
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 2.73.6
+  date: 2021-04-08T20:33:56.264Z
+- commits:
     - subject: Update balena-supervisor from v12.4.6 to v12.5.6
       hash: 6852b3704575ce5535082e2c02a7f2c6f57e1df4
       body: ''
