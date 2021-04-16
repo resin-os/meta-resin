@@ -5,10 +5,11 @@ Requires=resin-state.service
 After=resin-state.service sshdgenkeys.service os-sshkeys.service
 
 [Service]
-Environment="SSHD_OPTS="
+Environment="SSHD_OPTS=" "SSHD_EXTRA_OPTS="
 EnvironmentFile=-/etc/default/ssh
+EnvironmentFile=-/home/root/.ssh/sshd.env
 ExecStartPre=-@SBINDIR@/ssh_keys_merger
-ExecStart=-/usr/sbin/sshd -i $SSHD_OPTS
+ExecStart=-/usr/sbin/sshd -i $SSHD_OPTS $SSHD_EXTRA_OPTS
 ExecReload=/bin/kill -HUP $MAINPID
 StandardInput=socket
 StandardError=syslog
