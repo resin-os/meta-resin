@@ -1,4 +1,4 @@
-inherit image_types
+inherit image_types balena-engine-rootless
 
 #
 # Create a raw image that can by written onto a storage device using dd/etcher.
@@ -354,12 +354,10 @@ IMAGE_CMD_balenaos-img () {
 # partition
 do_rootfs[vardeps] += "BALENA_BOOT_PARTITION_FILES"
 
-# XXX(petrosagg): This should be eventually implemented using a docker-native daemon
 IMAGE_CMD_docker () {
-    DOCKER_IMAGE=$(${IMAGE_CMD_TAR} -cv -C ${IMAGE_ROOTFS} . | DOCKER_API_VERSION=1.22 docker import -)
-    DOCKER_API_VERSION=1.22 docker save ${DOCKER_IMAGE} > ${BALENA_DOCKER_IMG}
+    DOCKER_IMAGE=$(${IMAGE_CMD_TAR} -cv -C ${IMAGE_ROOTFS} . | DOCKER_API_VERSION=1.22 ${ENGINE_CLIENT} import -)
+    DOCKER_API_VERSION=1.22 ${ENGINE_CLIENT} save ${DOCKER_IMAGE} > ${BALENA_DOCKER_IMG}
 }
-
 IMAGE_TYPEDEP_hostapp-ext4 = "docker"
 
 do_image_hostapp_ext4[depends] = " \
@@ -368,5 +366,5 @@ do_image_hostapp_ext4[depends] = " \
 
 IMAGE_CMD_hostapp-ext4 () {
     dd if=/dev/zero of=${BALENA_HOSTAPP_IMG} seek=$ROOTFS_SIZE count=0 bs=1024
-    mkfs.hostapp -t "${TMPDIR}" -s "${STAGING_DIR_NATIVE}" -i ${BALENA_DOCKER_IMG} -o ${BALENA_HOSTAPP_IMG}
+    env ENGINE_CLIENT="${ENGINE_CLIENT}" mkfs.hostapp -t "${TMPDIR}" -s "${STAGING_DIR_NATIVE}" -i ${BALENA_DOCKER_IMG} -o ${BALENA_HOSTAPP_IMG}
 }
