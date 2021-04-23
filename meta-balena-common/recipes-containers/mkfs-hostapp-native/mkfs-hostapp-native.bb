@@ -8,13 +8,13 @@ SRC_URI = " \
     file://mkfs.hostapp \
     "
 
-inherit native
-
 DEPENDS = " \
     balena-native \
     hostapp-update-native \
     e2fsprogs-native \
     "
+
+inherit native balena-engine-rootless
 
 python __anonymous() {
     # Force BALENA_STORAGE to use the machine specific definition even if we
@@ -36,9 +36,9 @@ do_compile () {
         sed -i "s/@BALENA_STORAGE@/${BALENA_STORAGE}/g" $i
     done
 
-    IMAGE_ID=$(DOCKER_API_VERSION=1.22 docker build ${B}/work | grep -o -E '[a-z0-9]{12}' | tail -n1)
-    DOCKER_API_VERSION=1.22 docker save "$IMAGE_ID" > ${B}/work/mkfs-hostapp-image.tar
-    DOCKER_API_VERSION=1.22 docker rmi "$IMAGE_ID"
+    IMAGE_ID=$(DOCKER_API_VERSION=1.22 ${ENGINE_CLIENT} build ${B}/work | grep -o -E '[a-z0-9]{12}' | tail -n1)
+    DOCKER_API_VERSION=1.22 ${ENGINE_CLIENT} save "$IMAGE_ID" > ${B}/work/mkfs-hostapp-image.tar
+    DOCKER_API_VERSION=1.22 ${ENGINE_CLIENT} rmi "$IMAGE_ID"
 
     sed -i "s/@IMAGE@/${IMAGE_ID}/" ${B}/work/mkfs.hostapp
 }
