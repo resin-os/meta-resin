@@ -1,0 +1,47 @@
+#!/bin/sh
+
+BALENA_HOSTOS_BLOCK_CLASS="io.balena.image.class"
+BALENA_HOSTOS_BLOCK_STORE="io.balena.image.store"
+BALENA_HOSTOS_BLOCK_REQUIRES_REBOOT="io.balena.image.requires-reboot"
+BALENA_HOSTOS_APP_UUID="io.balena.app-uuid"
+BALENA_HOSTOS_APP_ID="io.balena.app-id"
+BALENA_HOSTOS_RELEASE_VERSION="io.balena.release-version"
+BALENA_HOSTOS_SERVICE_NAME="io.balena.service-name"
+
+# Fetch target state from API
+#
+# Inputs:
+# $1: Device UUID
+# $2: Balena API environment
+# $3: Balena API token
+#
+# Outputs:
+# Target state JSON in stdout
+#
+os_helpers_fetch_target_state() {
+	_device_uuid="$1"
+	_api_env="$2"
+	_token="$3"
+	_target_state_json=$(curl --silent --header "Authorization: Bearer ${_token}" --header "User-Agent:" --compressed "${_api_env}/v6/supervisor_release?\$select=supervisor_version,image_name&\$filter=should_manage__device/any(d:d/uuid%20eq%20'${_device_uuid}')" | jq -e -r '.d[0].supervisor_version,.d[0].image_name')
+	echo "${_target_state_json}" | tr "\n" " "
+}
+
+# Prints imageID from digest
+#
+# Inputs:
+# $1: Image location on Balena registry (i.e registry2.balena-staging.com/v2/<id>@sha256:<digest>)
+#
+# Outputs:
+# Target state JSON in stdout
+#
+os_helpers_imageid_from_digest() {
+	_image="$1"
+	_image_name=$(echo "${_image}" | cut -d "@" -f1)
+	_digest=$(echo "${_image}" | cut -d "@" -f2)
+	_imageid=$(balena images --filter=reference="${_image_name}" --format "{{.ID}}")
+	_digest_check=$(balena images --digests --filter=reference="${_image_name}" --format "{{.Digest}}")
+	if [ "${_digest}" = "${_digest_check}" ]; then
+		echo "${_imageid}"
+	fi
+}
+}
