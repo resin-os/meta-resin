@@ -2,8 +2,18 @@
 
 FREESPACE_LIMIT=10
 datapart=$(get_state_path_from_label "resin-data")
+dataparttype=$(lsblk "${datapart}" -nlo type)
 datapartdev=$(basename $(readlink -f "${datapart}"))
-datadev=$(lsblk "$(readlink -f "$datapart")" -n -o PKNAME)
+if [ "${dataparttype}" = "crypt" ]; then
+    if [ "$(ls /sys/class/block/${datapartdev}/slaves | wc -l)" != "1" ]; then
+        # This is just a disaster circuit breaker, it should never happen
+        fail "Unable to determine parent partition for ${datapartdev}"
+    fi
+
+    # We have asserted that there is a single slave device
+    datapartdev=$(ls "/sys/class/block/${datapartdev}/slaves")
+fi
+datadev=$(lsblk "/dev/${datapartdev}" -d -n -o PKNAME)
 
 get_part_table_type() {
     parted -s "$1" print | grep "Partition Table" | tr -d " " |cut -d ":" -f2
@@ -54,6 +64,15 @@ resindataexpander_run() {
 	        info "resindataexpander: Finished expanding data partition."
 	        partprobe
 	        sync
+
+		if [ "${dataparttype}" = "crypt" ]; then
+			datapartmap=$(lsblk ${datapart} -nlo name)
+			info "resindataexpander: Expand LUKS volume for data partition..."
+			cryptsetup resize "${datapartmap}"
+			info "resindataexpander: Expanded LUKS volume for data partition"
+			sync
+               fi
+
                 # We return when we've done the expansion
 		info "Data partition at $datapart expanded."
 		# Expand filesystem
