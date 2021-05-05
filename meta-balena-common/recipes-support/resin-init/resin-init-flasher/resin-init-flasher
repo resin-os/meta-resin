@@ -133,26 +133,78 @@ if [ -z "$internal_dev" ]; then
     fail "Failed to find any block devices in $INTERNAL_DEVICE_KERNEL."
 fi
 inform "$internal_dev will be used for flashing."
-dd if="/opt/$BALENA_IMAGE" of="/dev/$internal_dev" bs=4M 2> /tmp/dd_progress_log & DD_PID=$!
 
-if ! kill -0 $DD_PID; then
-    fail "Failed to flash internal device $INTERNAL_DEVICE_KERNEL."
-fi
+if [ "$LUKS" = "1" ]; then
+    # TODO: Hardcoded password now, randomize with TPM2
+    PASSWORD="${LUKS_PASSWORD:-balenabeta}"
+    LOOP_DEVICE=$(losetup --find --show --partscan "/opt/$BALENA_IMAGE")
 
-IMAGE_FILE_SIZE=$(wc -c /opt/"$BALENA_IMAGE" | awk '{print $1}')
+    # Copy header and resin-boot partition
+    inform "Flashing boot partition"
+    dd if="/opt/$BALENA_IMAGE" of="/dev/$internal_dev" bs=4M count=11
 
-resin-device-progress --percentage 0 --state "Starting flashing balenaOS on internal media" || true
+    # Repartition the new drive - this assumes GPT partition table
+    inform "Repartitioning $internal_dev for disk encryption"
 
-while kill -USR1 $DD_PID 2>/dev/null; do
-    sleep 3
-    if [ ! -s /tmp/dd_progress_log ]; then
-        continue
+    echo -e "OK\nFix" | parted ---pretend-input-tty "/dev/$internal_dev" print
+
+    parted -s "/dev/$internal_dev" -- rm 5
+    parted -s "/dev/$internal_dev" -- rm 4
+    parted -s "/dev/$internal_dev" -- rm 3
+    parted -s "/dev/$internal_dev" -- rm 2
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-boot 44 86
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-rootA 86 1112
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-rootB 1112 2138
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-state 2138 2160
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-data 2160 2366
+
+    PART_PREFIX=""
+    if [ -e "/dev/${internal_dev}p1" ]; then
+        PART_PREFIX="p"
     fi
-    IMAGE_WRITTEN_BYTES=$(awk 'END{print $1}' /tmp/dd_progress_log)
-    let RATIO=$IMAGE_WRITTEN_BYTES*100/$IMAGE_FILE_SIZE || true
-    resin-device-progress --percentage $RATIO --state "Flashing balenaOS on internal media" || true
-    truncate -s 0 /tmp/dd_progress_log
-done
+
+    # Relabel former boot partition
+    parted -s "/dev/$internal_dev" -- name 1 balena-efi
+    mlabel ::balena-efi -i "/dev/${internal_dev}${PART_PREFIX}1"
+
+    for PART_ID in 2 3 4 5 6; do
+        PART_DEV="/dev/$internal_dev$PART_PREFIX$PART_ID"
+        inform "Encrypting $PART_DEV"
+        echo -n "$PASSWORD" | cryptsetup luksFormat "$PART_DEV" -
+        echo -n "$PASSWORD" | cryptsetup luksOpen "$PART_DEV" "part$PART_ID" --key-file -
+        if [ "$PART_ID" = 2 ]; then
+            # Just create the FS, we will split boot and efi below
+            mkfs.ext4 -L "resin-boot" "/dev/mapper/part$PART_ID"
+            continue
+        fi
+        inform "Flasing $PART_DEV"
+        dd if="${LOOP_DEVICE}p$[$PART_ID - 1]" of="/dev/mapper/part$PART_ID" bs=4M
+        sync "/dev/mapper/part$PART_ID"
+    done
+
+    losetup -d "$LOOP_DEVICE"
+else
+    dd if="/opt/$BALENA_IMAGE" of="/dev/$internal_dev" bs=4M 2> /tmp/dd_progress_log & DD_PID=$!
+
+    if ! kill -0 $DD_PID; then
+        fail "Failed to flash internal device $INTERNAL_DEVICE_KERNEL."
+    fi
+
+    IMAGE_FILE_SIZE=$(wc -c /opt/"$BALENA_IMAGE" | awk '{print $1}')
+
+    resin-device-progress --percentage 0 --state "Starting flashing balenaOS on internal media" || true
+
+    while kill -USR1 $DD_PID 2>/dev/null; do
+        sleep 3
+        if [ ! -s /tmp/dd_progress_log ]; then
+            continue
+        fi
+        IMAGE_WRITTEN_BYTES=$(awk 'END{print $1}' /tmp/dd_progress_log)
+        let RATIO=$IMAGE_WRITTEN_BYTES*100/$IMAGE_FILE_SIZE || true
+        resin-device-progress --percentage $RATIO --state "Flashing balenaOS on internal media" || true
+        truncate -s 0 /tmp/dd_progress_log
+    done
+fi
 
 sync
 
@@ -187,9 +239,29 @@ fi
 # Mount internal device boot partition
 mkdir -p $INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT
 inform "Mounting internal device boot partition."
+
 if ! mount /dev/disk/by-label/resin-boot $INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT; then
-        fail "Failed to mount disk labeled as 'resin-boot'."
+    fail "Failed to mount disk labeled as 'resin-boot'."
 fi
+
+if [ "$LUKS" = "1" ]; then
+    EFI_MOUNT_DIR="$INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/EFI"
+    mkdir "$EFI_MOUNT_DIR"
+    if ! mount /dev/disk/by-label/BALENA-EFI "$EFI_MOUNT_DIR"; then
+        fail "Failed to mount disk labeled as 'BALENA-EFI'."
+    fi
+
+    for FILE in $(ls "$EFI_MOUNT_DIR"); do
+        if [ "$FILE" = "EFI" ]; then
+            continue
+        fi
+
+        mv "$EFI_MOUNT_DIR/$FILE" "$INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/"
+    done
+
+    INTERNAL_DEVICE_BOOTLOADER_CONFIG_PATH="/EFI$INTERNAL_DEVICE_BOOTLOADER_CONFIG_PATH"
+fi
+
 # Copy custom splash dir
 mkdir -p "$INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$SPLASH_DIRNAME"
 cp -r $EXTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$SPLASH_DIRNAME/* $INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$SPLASH_DIRNAME
@@ -216,7 +288,11 @@ if [ -n "${INTERNAL_DEVICE_BOOTLOADER_CONFIG}" ] && [ -f "${EXTERNAL_DEVICE_BOOT
         if [[ -z "${INTERNAL_DEVICE_BOOTLOADER_CONFIG_PATH}" ]]; then
             fail "INTERNAL_DEVICE_BOOTLOADER_CONFIG needs INTERNAL_DEVICE_BOOTLOADER_CONFIG_PATH to be set."
         fi
+
         cp "$EXTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$INTERNAL_DEVICE_BOOTLOADER_CONFIG" "$INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$INTERNAL_DEVICE_BOOTLOADER_CONFIG_PATH"
+        if [ -f "$EXTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$INTERNAL_DEVICE_BOOTLOADER_CONFIG.sig" ]; then
+            cp "$EXTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$INTERNAL_DEVICE_BOOTLOADER_CONFIG.sig" "$INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$INTERNAL_DEVICE_BOOTLOADER_CONFIG_PATH.sig"
+        fi
 
         if [ -n "${INTERNAL_DEVICE_BOOTLOADER_LEGACY_CONFIG_PATH}" ]; then
             cp "$EXTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$INTERNAL_DEVICE_BOOTLOADER_CONFIG" "$INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/$INTERNAL_DEVICE_BOOTLOADER_LEGACY_CONFIG_PATH"
@@ -244,7 +320,18 @@ done
 
 # Copy json configuration file from external (flasher) to the internal (booting) device
 cp -rvf "$CONFIG_PATH" "$INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT"
+
+if [ "$LUKS" = "1" ]; then
+    umount "$EFI_MOUNT_DIR"
+fi
+
 umount $INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT
+
+if [ "$LUKS" = "1" ]; then
+    for PART_ID in 2 3 4 5 6; do
+        cryptsetup luksClose "part$PART_ID"
+    done
+fi
 
 sync
 
