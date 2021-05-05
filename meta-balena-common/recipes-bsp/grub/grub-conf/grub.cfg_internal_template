@@ -27,6 +27,25 @@ fi
 function get_root_uuid {
  # Extract drive and partition type from boot drive in grub format
  regexp -s 1:bdrive -s 2:pscheme '^(hd.*),(msdos|gpt).*' $root
+
+ # Unlock LUKS, there is no good check so just try it and see
+ if test "$1" == "resin-rootA"; then
+  cryptomount ${bdrive},${pscheme}3
+ elif test "$1" == "resin-rootB"; then
+  cryptomount ${bdrive},${pscheme}4
+ fi
+
+ # If LUKS was unlocked above (crypto0) should be our root
+ # if that is the case use it and quit
+ if probe --set rlabel --label (crypto0) ; then
+  if test $rlabel == "$1"; then
+   probe --set root_uuid --fs-uuid (crypto0)
+   search --set root --fs-uuid ${root_uuid}
+   return
+  fi
+ fi
+
+
  # Parse boot drive partitions looking for specific label
  for part in 1 2 3 4 5 6 7 8 9 10; do
   probe --set rlabel --label (${bdrive},${pscheme}${part})
