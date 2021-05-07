@@ -18,10 +18,10 @@ Test the transition between balenaOS releases via the `hostapp-update` mechanism
 # current tests
 
 * [smoke test](./tests/smoke.js): check if we can HUP successfully
+* [storage migration](./tests/storagemigration.js): check if we can migrate to overlayfs
 
 ## TODO
 
 * [self-serve-dashboard](./tests/self-serve-dashboard.js)
 * [rollback-altboot](./tests/rollback-altboot.js)
 * [rollback-health](./tests/rollback-health.js)
-* [storage migration](./tests/storagemigration.js)
