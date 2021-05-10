@@ -1,4 +1,6 @@
-inherit image_types balena-engine-rootless
+inherit image_types
+ENGINE_CLIENT ?= "docker"
+inherit ${@bb.utils.contains('BALENA_STORAGE','overlay2','balena-engine-rootless', '', d)}
 
 #
 # Create a raw image that can by written onto a storage device using dd/etcher.
