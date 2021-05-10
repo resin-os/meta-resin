@@ -10,7 +10,9 @@ SRC_URI = " \
 S = "${WORKDIR}"
 B = "${S}/build"
 
-inherit deploy balena-engine-rootless
+inherit deploy
+ENGINE_CLIENT ?= "docker"
+inherit ${@bb.utils.contains('BALENA_STORAGE','overlay2','balena-engine-rootless', '', d)}
 require docker-disk.inc
 require recipes-containers/balena-supervisor/balena-supervisor.inc
 
