@@ -102,3 +102,6 @@ PREFERRED_VERSION_libstd-rs = "1.36.0"
 
 # balena-engine go version requirement
 GOVERSION = "1.16.2"
+
+# Set BALENA_STORAGE after config parsing for all recipes
+INHERIT += "balena-engine-storage"
