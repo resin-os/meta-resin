@@ -8,7 +8,9 @@ SRC_URI = "file://example_module/hello.c \
            file://example_module/Makefile \
            file://Dockerfile"
 
-inherit kernel-arch balena-engine-rootless
+inherit kernel-arch
+ENGINE_CLIENT ?= "docker"
+inherit ${@bb.utils.contains('BALENA_STORAGE','overlay2','balena-engine-rootless', '', d)}
 
 # Derived from kernel-arch.bbclass
 valid_debian_tuple = "i386 x86 arm aarch64"
