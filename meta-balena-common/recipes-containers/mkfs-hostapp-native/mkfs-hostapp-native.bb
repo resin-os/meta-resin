@@ -14,7 +14,7 @@ DEPENDS = " \
     e2fsprogs-native \
     "
 
-inherit native balena-engine-rootless
+inherit native
 
 python __anonymous() {
     # Force BALENA_STORAGE to use the machine specific definition even if we
@@ -24,6 +24,9 @@ python __anonymous() {
     if bs_machine:
         d.setVar("BALENA_STORAGE", bs_machine)
 }
+
+ENGINE_CLIENT ?= "docker"
+inherit ${@bb.utils.contains('BALENA_STORAGE','overlay2','balena-engine-rootless', '', d)}
 
 S = "${WORKDIR}"
 
