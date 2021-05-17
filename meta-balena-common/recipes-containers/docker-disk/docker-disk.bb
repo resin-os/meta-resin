@@ -15,6 +15,7 @@ ENGINE_CLIENT ?= "docker"
 inherit ${@bb.utils.contains('BALENA_STORAGE','overlay2','balena-engine-rootless', '', d)}
 require docker-disk.inc
 require recipes-containers/balena-supervisor/balena-supervisor.inc
+CONTAINER_CGROUPS_PATH="${@bb.utils.contains('BALENA_STORAGE','overlay2','', '-v /sys/fs/cgroup:/sys/fs/cgroup:ro', d)}"
 
 # By default pull balena-supervisor
 TARGET_REPOSITORY ?= "${SUPERVISOR_REPOSITORY}"
@@ -54,13 +55,15 @@ do_compile () {
 
 	# Generate the data filesystem
 	RANDOM=$$
+	CONTAINER_UID=${CONTAINER_UID:-$(id -u)}
+	CONTAINER_GID=${CONTAINER_GID:-$(id -u)}
 	_image_name="docker-disk-$RANDOM"
 	_container_name="docker-disk-$RANDOM"
 	${ENGINE_CLIENT} rmi ${_image_name} > /dev/null 2>&1 || true
 	${ENGINE_CLIENT} build -t ${_image_name} -f ${WORKDIR}/Dockerfile ${WORKDIR}
 	${ENGINE_CLIENT} run --privileged --rm \
 		-e BALENA_STORAGE=${BALENA_STORAGE} \
-		-e USER_ID=$(id -u) -e USER_GID=$(id -u) \
+		-e USER_ID=${CONTAINER_UID} -e USER_GID=${CONTAINER_GID} \
 		-e TARGET_REPOSITORY="${TARGET_REPOSITORY}" \
 		-e TARGET_TAG="${TARGET_TAG}" \
 		-e HELLO_REPOSITORY="${HELLO_REPOSITORY}" \
@@ -71,6 +74,7 @@ do_compile () {
 		-e PRIVATE_REGISTRY_PASSWORD="${PRIVATE_REGISTRY_PASSWORD}" \
 		-e PARTITION_SIZE="${PARTITION_SIZE}" \
 		-e FS_BLOCK_SIZE="${FS_BLOCK_SIZE}" \
+                ${CONTAINER_CGROUPS_PATH} \
 		-v ${B}:/build \
 		--name ${_container_name} ${_image_name}
 	${ENGINE_CLIENT} rmi ${_image_name}

@@ -12,7 +12,7 @@ DOCKER_HOST=unix:///var/run/docker.sock
 finish() {
 	# Make all files owned by the build system
 	# On rootless docker, root is the user running the engine
-	chown -R "root:root" "${BUILD}"
+	chown -R "${USER_ID}:${USEUSERUSER_ID${BUILD}"
 }
 trap finish EXIT
 
