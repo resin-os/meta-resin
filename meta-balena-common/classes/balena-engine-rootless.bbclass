@@ -17,6 +17,9 @@ ENGINE_CLIENT = "env DOCKER_HOST=${DOCKER_HOST} ${ENGINE_CLIENT_NAME}"
 ENGINE_SLIRP4NETNS_SECCOMP ?= "false"
 ENGINE_SLIRP4NETNS_SANDBOX ?= "auto"
 
+CONTAINER_UID="root"
+CONTAINER_GID="root"
+
 do_run_engine() {
     set -x
     mkdir -p "${ENGINE_DIR}"
