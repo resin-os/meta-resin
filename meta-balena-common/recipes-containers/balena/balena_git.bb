@@ -54,6 +54,7 @@ FILES_${PN} += " \
 	/home/root \
 	/boot/storage-driver \
 	${localstatedir} \
+	${bindir} \
 	"
 
 DOCKER_PKG="github.com/docker/docker"
@@ -167,6 +168,12 @@ do_install() {
 
 	install -d ${D}${sysconfdir}/tmpfiles.d
 	install -m 0644 ${WORKDIR}/balena-tmpfiles.conf ${D}${sysconfdir}/tmpfiles.d/
+}
+
+do_install_append_class-native() {
+        install -d ${D}${bindir}
+        install -m 0755 ${S}/src/import/contrib/dockerd-rootless.sh ${D}${bindir}/balenad-rootless.sh
+        sed -i "s/dockerd/balenad/g" ${D}${bindir}/balenad-rootless.sh
 }
 
 BBCLASSEXTEND = " native"

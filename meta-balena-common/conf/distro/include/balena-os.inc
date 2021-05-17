@@ -37,7 +37,7 @@ DEVELOPMENT_IMAGE ?= "0"
 DISTRO_FEATURES_append = " ${@bb.utils.contains('DEVELOPMENT_IMAGE','1','development-image','',d)}"
 
 # Providers
-PREFERRED_PROVIDER_docker ?= "docker"
+PREFERRED_PROVIDER_docker ?= "balena"
 PREFERRED_PROVIDER_jpeg ?= "jpeg"
 PREFERRED_PROVIDER_jpeg-native ?= "jpeg-native"
 
@@ -102,3 +102,6 @@ PREFERRED_VERSION_libstd-rs = "1.36.0"
 
 # balena-engine go version requirement
 GOVERSION = "1.16.2"
+
+# Set BALENA_STORAGE after config parsing for all recipes
+INHERIT += "balena-engine-storage"
