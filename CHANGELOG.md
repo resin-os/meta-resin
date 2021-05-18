@@ -1,6 +1,30 @@
 Change log
 -----------
 
+# v2.79.1
+## (2021-05-18)
+
+* docker-disk: Use user and groups IDs and cgroups volume for aufs [Alex Gonzalez]
+* balena-engine-rootless: Initialize user and groups IDs [Alex Gonzalez]
+* kernel-headers-test: Conditionally inherit balena-engine-rootless [Alex Gonzalez]
+* mkfs-hostapp-native: Conditionally inherit balena-engine-rootless [Alex Gonzalez]
+* docker-disk: Conditionally inherit balena-engine-rootless [Alex Gonzalez]
+* classes: image_types_balena: Conditionally inherit balena-engine-rootless [Alex Gonzalez]
+* distro: balena-os: Inherit balena-engine-storage globally [Alex Gonzalez]
+* classes: Add balena-engine-storage [Alex Gonzalez]
+* mkfs-hostapp-native: Replace docker with balena-engine [Alex Gonzalez]
+* image_types_balena: Replace docker with balena-engine [Alex Gonzalez]
+* docker-disk: Replace docker with balena-engine [Alex Gonzalez]
+* balena-os: Set docker provide to balena in distro settings [Alex Gonzalez]
+* rootlesskit: Add package [Alex Gonzalez]
+* libseccomp: Add library [Alex Gonzalez]
+* slirp4netns: Add recipe from meta-virtualization [Alex Gonzalez]
+* kernel-headers-test: Replace use of docker with balena-engine [Alex Gonzalez]
+* Replace docker with balena-engine in build [Alex Gonzalez]
+* balena-git: Extend to native and package rootless script [Alex Gonzalez]
+* os-helpers: Add a os-helpers-engine package [Alex Gonzalez]
+* balena-os: Add preferred provider for Go native [Alex Gonzalez]
+
 # v2.79.0
 ## (2021-05-13)
 

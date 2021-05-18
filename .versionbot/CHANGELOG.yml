@@ -1,4 +1,279 @@
 - commits:
+    - subject: 'docker-disk: Use user and groups IDs and cgroups volume for aufs'
+      hash: bf57b84e5eaab66c7046641f22d33680b82bce0a
+      body: |
+        On rootless docker the engine is run by root, while if using the host's
+        docker the users are the container defined users.
+
+        This commit can be reverted once aufs is deprecated and only rootless
+        balena-engine is used in the build.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'balena-engine-rootless: Initialize user and groups IDs'
+      hash: 04ffa45787f8997481b555331be2e274dc98a99a
+      body: |
+        On rootless docker the engine is run by root, while if using the host's
+        docker the users are the container defined users.
+
+        This commit can be reverted once aufs is deprecated and only rootless
+        balena-engine is used in the build.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'kernel-headers-test: Conditionally inherit balena-engine-rootless'
+      hash: e506d86888c3522c309cf9301ab59827706e4160
+      body: >
+        Only inherit balena-engine-rootless if the storage engine is overlay2,
+        as
+
+        rootless docker is not supported in aufs.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'mkfs-hostapp-native: Conditionally inherit balena-engine-rootless'
+      hash: cd827a1059b72f7bf6363b6040c1209165538e43
+      body: >
+        Only inherit balena-engine-rootless if the storage engine is overlay2,
+        as
+
+        rootless docker is not supported in aufs.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'docker-disk: Conditionally inherit balena-engine-rootless'
+      hash: 824043c4ba2c4825d0907a8f8a5c0b849fb44f9e
+      body: >
+        Only inherit balena-engine-rootless if the storage engine is overlay2,
+        as
+
+        rootless docker is not supported in aufs.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: >-
+        classes: image_types_balena: Conditionally inherit
+        balena-engine-rootless
+      hash: 479ce48ff3a007b6f7765c38218ee79ec42fca76
+      body: >
+        Only inherit balena-engine-rootless if the storage engine is overlay2,
+        as
+
+        rootless docker is not supported in aufs.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'distro: balena-os: Inherit balena-engine-storage globally'
+      hash: 397ea1ce276a7212767a353caba54ba35047019e
+      body: |
+        The balena-engine-storage class that sets the BALENA_STORAGE variable on
+        native recipes needs to be globally inherited so that it triggers in the
+        config parse event.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'classes: Add balena-engine-storage'
+      hash: 6a7615bc3b8d1bb4a132aaf81537daee075beb2b
+      body: |
+        This class set the BALENA_STORAGE variable at the config parsed event so
+        that it can be used in an inherit command for native recipes that need
+        to inherit conditionally on the target's BALENA_STORAGE variable.
+
+        This commit can be reversed once `aufs` is deprecated as a supported
+        storage engine.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'mkfs-hostapp-native: Replace docker with balena-engine'
+      hash: a7faed8bcd69ac88f7a81d9d6a9a3ca10fa52895
+      body: |
+        The build system is now using balena-engine instead of docker not to
+        have a dependency on the hostOS.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'image_types_balena: Replace docker with balena-engine'
+      hash: a2dcb762780b335d0bc7c346402cf00def38b4b4
+      body: |
+        The build system is now using balena-engine instead of docker not to
+        have a dependency on the hostOS.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'docker-disk: Replace docker with balena-engine'
+      hash: 034999a92b4298bca5bf6abed69f10d53e0cea45
+      body: |
+        The build system is now using balena-engine not to have a dependency on
+        the host's system.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'balena-os: Set docker provide to balena in distro settings'
+      hash: 89fc623f2a6ff57be05cfe86b6df11c6500d166e
+      body: |
+        We are now using balena-engine also in the build system.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'rootlesskit: Add package'
+      hash: 2f3fd69a0ef686e942822e9d319ed2c171f4d8ba
+      body: |
+        This is a dependency to be able to use a native rootless balena-engine.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'libseccomp: Add library'
+      hash: 112d5eba1d10639bc425d818c4665e00028930b5
+      body: |
+        This is a dependency for slirp4netns which in turn is required to run a
+        native rootless balena-engine.
+
+        It comes from meta-security's dunfell branch at:
+        831f2d6451918f1cf77795c2cf5229d1e49f283f
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'slirp4netns: Add recipe from meta-virtualization'
+      hash: 6ca726b95cd65b28fd569ef1770d5f68c23b781b
+      body: |
+        This is a requirement to run a native rootless balena-engine for the
+        build process.
+
+        It comes from meta-virtualization's dunfell branch:
+        89abc62b47f6f20db9d00a8ec9b2c1b6b60ac3f9
+
+        The recipe has been extended for native compilation.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'kernel-headers-test: Replace use of docker with balena-engine'
+      hash: ebd56d839895094303fd31393d5bc54be0c2b187
+      body: |
+        This removes this recipe's dependency on the host's docker installation.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Replace docker with balena-engine in build
+      hash: 8e5b87271ee4ed8b7c5b92c2e5b2080cc8f6ffc3
+      body: >
+        This new class will start the balena-engine to use in the recipe's
+        tasks.
+
+        In this way we will remove the dependency on the host's docker
+        installation.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Changelog-entry: Replace docker with balena-engine in build
+        changelog-entry: Replace docker with balena-engine in build
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'balena-git: Extend to native and package rootless script'
+      hash: 90864453daceca92fa5850441a592885fd5da937
+      body: |
+        In order to use the engine in the Yocto build process and launch it in
+        rootless mode.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'os-helpers: Add a os-helpers-engine package'
+      hash: 2c5d5a0c4cfda7a99a01a22debc3416fe63fa1ae
+      body: |
+        This includes the balena-docker.inc script library. It also extends the
+        recipe to native so it can be built and included in the native sysroot
+        and be available to use in classes.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'balena-os: Add preferred provider for Go native'
+      hash: 20dd5fb4384e78f24d3e3304be38666fdcb859a8
+      body: |
+        With Go 1.16 a precompiled go-binary-native that provides go-native was
+        introduced to bootstrap the Go compilation.
+        Specify to use the go-native recipe and not go-binary-native when
+        requiring go-native.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.79.1
+  date: 2021-05-18T08:34:52.170Z
+- commits:
     - subject: 'balena-engine: build in GOPATH mode'
       hash: 342a9621b5416d2a1f6aec3948dfdcfe15395d13
       body: |

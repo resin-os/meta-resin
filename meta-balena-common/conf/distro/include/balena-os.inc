@@ -4,7 +4,7 @@ include conf/distro/include/balena-os-yocto-version.inc
 
 DISTRO = "balena-os"
 DISTRO_NAME = "balenaOS"
-DISTRO_VERSION = "2.79.0"
+DISTRO_VERSION = "2.79.1"
 HOSTOS_VERSION = "${DISTRO_VERSION}"
 python () {
     ''' Set HOSTOS_VERSION from board VERSION if available '''
@@ -102,6 +102,7 @@ PREFERRED_VERSION_libstd-rs = "1.36.0"
 
 # balena-engine go version requirement
 GOVERSION = "1.16.2"
+PREFERRED_PROVIDER_go-native = "go-native"
 
 # Set BALENA_STORAGE after config parsing for all recipes
 INHERIT += "balena-engine-storage"
