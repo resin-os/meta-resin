@@ -1,0 +1,112 @@
+#!/bin/bash
+
+# Copyright 2021 Balena Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#
+# Migrate current state in apps.json from v2 to v3 target state
+#
+
+set -e
+
+. /usr/libexec/os-helpers-api
+
+#
+# MAIN
+#
+
+DATA_MOUNT="/mnt/data"
+APPS_JSON_NAME="apps.json"
+APPS_JSON_PATH="${DATA_MOUNT}/${APPS_JSON_NAME}"
+BOOT_MOUNT="/mnt/boot"
+CONFIG_JSON_NAME="config.json"
+CONFIG_JSON_PATH="${BOOT_MOUNT}/${CONFIG_JSON_NAME}"
+
+CURL="curl -s"
+TRANSLATION="v6"
+BALENA_API_ENDPOINT=$(jq -r '.apiEndpoint' "${CONFIG_JSON_PATH}")
+BALENA_DEVICE_API_KEY=$(jq -r '.deviceApiKey' "${CONFIG_JSON_PATH}")
+
+api_get_appUUID_from_appID() {
+	_appID="${1}"
+	_apiEnv="${2:-${BALENA_API_ENDPOINT}}"
+	_token="${3:-${BALENA_DEVICE_API_KEY}}"
+	_json=$(${CURL} -XGET "${_apiEnv}/${TRANSLATION}/application?\$filter=(id%20eq%20'${_appID}')" -H "Content-Type: application/json" -H "Authorization: Bearer ${_token}")
+	jq -r '.d[0].uuid' <<< "${_json}"
+}
+
+api_get_release_version_from_commit() {
+	_appID="${1}"
+	_commitID="${2}"
+	_apiEnv="${3:-${BALENA_API_ENDPOINT}}"
+	_token="${4:-${BALENA_DEVICE_API_KEY}}"
+	_json=$(${CURL} -XGET -H "Content-Type: application/json" -H "Authorization: Bearer ${_token}" "${_apiEnv}/${TRANSLATION}/release?\$filter=(belongs_to__application%20eq%20${_appID})%20and%20(commit%20eq%20%27${_commitID}%27)")
+	jq -r '.release_version' <<< "${_json}"
+}
+
+api_get_app_details_from_appID() {
+	_appID="${1}"
+	_commitID="${2}"
+	_appUUID=$(api_get_appUUID_from_appID "${_appID}")
+	_release_version=$(api_get_release_version_from_commit "${_appID}" "${_commitID}")
+	echo "${_appUUID}" "${_release_version}"
+}
+
+if [ -f "${APPS_JSON_PATH}" ]; then
+	if _version=$(os_helpers_get_current_state_version "${APPS_JSON_PATH}"); then
+		if [ "${_version}" = "v2" ]; then
+			>&2 echo "[ERROR] forward_current-state: Found v2 current state when v3 expected"
+			exit 1
+		elif [ "${_version}" = "v3" ]; then
+			if [  -f "${APPS_JSON_PATH}.v2" ]; then
+				_version=$(os_helpers_get_current_state_version "${APPS_JSON_PATH}.v2")
+				if [ "${_version}" != "v2" ]; then
+					>&2 echo "[ERROR] Corrupted v2 current state - bailing out"
+					rm "${APPS_JSON_PATH}.v2"
+					exit 1
+				fi
+				# Replace appIDs for appUUIDs in v2 target state
+				_nr_apps=$(jq -r '.apps | length' "${APPS_JSON_PATH}.v2")
+				if [ "${_nr_apps}" -ne "1" ]; then
+					>&2 echo "[ERROR] Invalid number of apps in stored v2 target state"
+					exit 1
+				fi
+				_pindevice=$(jq -r '.pinDevice' "${APPS_JSON_PATH}.v2")
+				_appID=$(jq -r '.apps | keys | @tsv' "${APPS_JSON_PATH}.v2")
+				# Check the current state appID is the one the device is provisioned into
+				_applicationId=$(jq -r '.applicationId' "${CONFIG_JSON_PATH}")
+				if [ "${_applicationId}" != "${_appID}" ]; then
+					>&2 echo "[ERROR] Cannot migrate preloaded apps if not provisioned to the same app"
+					exit 1
+				fi
+				_commitID=$(jq -r '.apps[] | .commit' "${APPS_JSON_PATH}.v2")
+				read -r _appUUID _release_version <<< "$(api_get_app_details_from_appID "${_appID}" "${_commitID}")"
+				_v2_app=$(jq '.apps |= with_entries(.key = "'"${_appUUID}"'")' "${APPS_JSON_PATH}.v2")
+				_v2_app=$(jq '.apps["'"${_appUUID}"'"] += { release_version: '"${_release_version}"'} | .apps' <<< "${_v2_app}")
+				_v3_state=$(jq --argjson entry "${_v2_app}" '.apps += $entry' "${APPS_JSON_PATH}")
+				_tmpState=$(mktemp)
+				jq '. += { pinDevice: '"${_pindevice}"'}' <<< "${_v3_state}" > "${_tmpState}"
+				mv "${_tmpState}" "${APPS_JSON_PATH}"
+				sync
+				rm -rf "${_tmpState}"
+				echo "[INFO] Migrated v2 current state to v3"
+			fi
+		fi
+	else
+		>&2 echo "[ERROR] Invalid current state file in new OS"
+		exit 1
+	fi
+else
+	>&2 echo "[INFO] No current state to migrate"
+fi
