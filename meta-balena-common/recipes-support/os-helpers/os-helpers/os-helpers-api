@@ -44,4 +44,37 @@ os_helpers_imageid_from_digest() {
 		echo "${_imageid}"
 	fi
 }
+
+# Outputs current state version
+#
+# Inputs:
+# $1: Path to current state (apps.json) file
+#
+# Outputs:
+#  v2 or v3 to stdout, nothing if there is no version match
+#
+# Returns:
+# 0 if there is a version match
+# 1 if there in no current state
+# 2 if there is an unknown state version
+#
+os_helpers_get_current_state_version() {
+	_apps_json="${1}"
+	_keys=$(jq -r '.apps | keys | @tsv' "${_apps_json}" | tr "\t" " ")
+	for _id in ${_keys}; do
+		_len=${#_id}
+		# v3 current state uses 32/62 chars appUUIDs as keys
+		if [ "${_len}" = 32 ] || [ "${_len}" = 62 ]; then
+			echo "v3"
+			return 0
+		# v2 current state uses appIDs as keys which are just incremental numbers
+		elif [ "${_len}" -gt 0 ]; then
+			echo "v2"
+			return 0
+		else
+			2>& echo "[WARN] os_helpers_check_current_state: Unknown current state version"
+			return 2
+		fi
+	done
+	return 1
 }
