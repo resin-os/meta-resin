@@ -1,6 +1,15 @@
 Change log
 -----------
 
+# v2.80.0
+## (2021-05-21)
+
+* README: Add a section for the overlay data blocks [Alex Gonzalez]
+* docker-disk: Allow to define a custom CA [Alex Gonzalez]
+* Install data store images [Alex Gonzalez]
+* Revert "docker-disk: Add the host extension images to the data partition" [Alex Gonzalez]
+* Revert "resin-vars: Parse the HOSTEXT_IMAGES variable from config.json" [Alex Gonzalez]
+
 # v2.79.2
 ## (2021-05-19)
 

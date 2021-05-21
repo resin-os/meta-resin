@@ -1,4 +1,81 @@
 - commits:
+    - subject: 'README: Add a section for the overlay data blocks'
+      hash: 01f5e61f8da4f4510232730cec95cc0bb41ea59f
+      body: |
+        Add a short section that explains the caveats of using data overlays and
+        the way to disable them.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'docker-disk: Allow to define a custom CA'
+      hash: 29d6a8e7e6384185b330f90d1d1dac412d0bec89
+      body: |
+        When building images against openBalena a custom CA needs to be used so
+        secure API calls are possible.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Install data store images
+      hash: b53ba5a2048c019a7501431e7e0ac4c0289617ee
+      body: |
+        Handle the installation of hostOS images with a target store in the data
+        partition as specified in the hostOS app.
+
+        Also, create an apps.json file that defines the preloaded default state
+        of the system
+      footer:
+        Change-type: minor
+        change-type: minor
+        Changelog-entry: Install data store images
+        changelog-entry: Install data store images
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: >-
+        Revert "docker-disk: Add the host extension images to the data
+        partition"
+      hash: 046b1ff3db7abd383021f0e6f7eaf42039b1768a
+      body: >
+        This reverts commit cd44a94cf1646828832070417a2deb9236b0f5ee.
+
+
+        The preloaded hostapp extensions are no longer recorded in the read-only
+        rootfs
+
+        but on the apps.json file.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'Revert "resin-vars: Parse the HOSTEXT_IMAGES variable from config.json"'
+      hash: 36ff02dbd9a035a6c3f7f7838ae39d9254c27d6d
+      body: |
+        This reverts commit 761f517f955f829e12b2c7f0a0f88830ded39e13.
+
+        The hostapp extension information will no longer be added to config.json
+        but to apps.json so that it can be managed by the supervisor.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.80.0
+  date: 2021-05-21T20:03:40.762Z
+- commits:
     - subject: Add boot-splash test to unmanaged suite
       hash: a6865f22ba5d5bd60f659daac113cac6ae1aa8f3
       body: ''
