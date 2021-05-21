@@ -91,6 +91,15 @@ The order of the services is as stated above and provides a robust time initiali
 
 Check [docs/rollbacks.md](docs/rollbacks.md) for the rollback documentation
 
+### Overlay data blocks
+
+The OS supports overlaying container images stored in the data partition for overlay2 based devices. To disable the overlaying, specify `balena.disable_overlays` as a kernel command line argument.
+
+When overlay data images are used:
+
+* The root filesystem  can no longer be mounted read-write
+* The number of images that can be overlayed is capped by the length of the options passed to the kernel's do_mount() which is currently the system's page size.
+
 ## Devices support
 
 ### WiFi Adapters
