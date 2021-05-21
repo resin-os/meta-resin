@@ -1,126 +1,80 @@
 - commits:
-    - subject: Skip some services when running under docker
-      hash: 8ef8078de0f1e65adab784c6456d66cf82ee4774
+    - subject: 'README: Add a section for the overlay data blocks'
+      hash: 01f5e61f8da4f4510232730cec95cc0bb41ea59f
       body: |
-        * skip setting up zram swap
-        * dont' attempt to mount inactive partition
+        Add a short section that explains the caveats of using data overlays and
+        the way to disable them.
       footer:
         Change-type: patch
         change-type: patch
-        Signed-off-by: Robert Günzler <robertg@balena.io>
-        signed-off-by: Robert Günzler <robertg@balena.io>
-      author: Robert Günzler
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
       nested: []
-  version: 2.79.4
-  date: 2021-05-21T10:15:56.497Z
-- commits:
-    - subject: 'kernel-resin: disable panic on hung task'
-      hash: ac0ba89f14c0b04b7353192f15a0634be44d910c
+    - subject: 'docker-disk: Allow to define a custom CA'
+      hash: 29d6a8e7e6384185b330f90d1d1dac412d0bec89
+      body: |
+        When building images against openBalena a custom CA needs to be used so
+        secure API calls are possible.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Install data store images
+      hash: b53ba5a2048c019a7501431e7e0ac4c0289617ee
+      body: |
+        Handle the installation of hostOS images with a target store in the data
+        partition as specified in the hostOS app.
+
+        Also, create an apps.json file that defines the preloaded default state
+        of the system
+      footer:
+        Change-type: minor
+        change-type: minor
+        Changelog-entry: Install data store images
+        changelog-entry: Install data store images
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: >-
+        Revert "docker-disk: Add the host extension images to the data
+        partition"
+      hash: 046b1ff3db7abd383021f0e6f7eaf42039b1768a
       body: >
-        Some BSPs have enabled CONFIG_BOOTPARAM_HUNG_TASK_PANIC which
-
-        can trigger panics upon high iowait, such as balena-engine
-
-        downloading/writing a large image to disk.
+        This reverts commit cd44a94cf1646828832070417a2deb9236b0f5ee.
 
 
-        Kconfig says the following:
+        The preloaded hostapp extensions are no longer recorded in the read-only
+        rootfs
 
-            Say Y here to enable the kernel to panic on "hung tasks",
-            which are bugs that cause the kernel to leave a task stuck
-            in uninterruptible "D" state.
-
-            The panic can be used in combination with panic_timeout,
-            to cause the system to reboot automatically after a
-            hung task has been detected. This feature is useful for
-            high-availability systems that have uptime guarantees and
-            where a hung tasks must be resolved ASAP.
-
-            Say N if unsure.
-
-        Hung tasks are not normally terminal, nor do they affect system
-
-        stability, but panicking during an image write forces a device into a
-
-        bootloop that requires manual intervention to remedy.
-
-
-        See the below stacktrace:
-
-
-        [  243.565482] INFO: task balenad:4049 blocked for more than 120
-        seconds.
-
-        [  243.565737]       Not tainted 4.9.140-l4t-r32.4 #1
-
-        [  243.565853] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-        disables this message.
-
-        [  243.566032] balenad         D    0  4049      1 0x00000008
-
-        [  243.566236] Call trace:
-
-        [  243.566354] [<ffffff80080863a4>] __switch_to+0x9c/0xc0
-
-        [  243.566479] [<ffffff8008f0d09c>] __schedule+0x22c/0x570
-
-        [  243.566590] [<ffffff8008f0d420>] schedule+0x40/0xa8
-
-        [  243.566744] [<ffffff8008f1057c>] rwsem_down_read_failed+0xd4/0x128
-
-        [  243.566872] [<ffffff8008f0f8a8>] down_read+0x58/0x60
-
-        [  243.566999] [<ffffff8008263568>] iterate_supers+0x78/0x138
-
-        [  243.567131] [<ffffff800829bac0>] sys_sync+0x50/0xc0
-
-        [  243.567237] [<ffffff8008083900>] el0_svc_naked+0x34/0x38
-
-        [  243.567394] Kernel panic - not syncing: hung_task: blocked tasks
-
-        [  243.567533] CPU: 3 PID: 47 Comm: khungtaskd Not tainted
-        4.9.140-l4t-r32.4 #1
-
-        [  243.567819] Hardware name: NVIDIA Jetson Xavier NX Developer Kit (DT)
-
-        [  243.568318] Call trace:
-
-        [  243.568508] [<ffffff800808c678>] dump_backtrace+0x0/0x1a8
-
-        [  243.571026] [<ffffff800808c844>] show_stack+0x24/0x30
-
-        [  243.576195] [<ffffff800841f4e8>] dump_stack+0x94/0xbc
-
-        [  243.581446] [<ffffff80081c3db0>] panic+0x128/0x28c
-
-        [  243.586599] [<ffffff8008178190>] watchdog+0x2f8/0x398
-
-        [  243.591760] [<ffffff80080dcd60>] kthread+0x100/0x108
-
-        [  243.596477] [<ffffff80080838a0>] ret_from_fork+0x10/0x30
-
-        [  243.602257] SMP: stopping secondary CPUs
-
-        [  243.605897] Kernel Offset: disabled
-
-        [  243.609511] Memory Limit: none
-
-        [  243.612484] trusty-log panic notifier - trusty version Built:
-        12:18:19 Oct 16 2020 [  243.636124] Rebooting in 1 seconds..
-
-
-        Disable this config for all platforms.
+        but on the apps.json file.
       footer:
-        Changelog-entry: 'kernel-resin: disable panic on hung task'
-        changelog-entry: 'kernel-resin: disable panic on hung task'
         Change-type: patch
         change-type: patch
-        Signed-off-by: Joseph Kogut <joseph@balena.io>
-        signed-off-by: Joseph Kogut <joseph@balena.io>
-      author: Joseph Kogut
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
       nested: []
-  version: 2.79.3
-  date: 2021-05-20T08:04:17.185Z
+    - subject: 'Revert "resin-vars: Parse the HOSTEXT_IMAGES variable from config.json"'
+      hash: 36ff02dbd9a035a6c3f7f7838ae39d9254c27d6d
+      body: |
+        This reverts commit 761f517f955f829e12b2c7f0a0f88830ded39e13.
+
+        The hostapp extension information will no longer be added to config.json
+        but to apps.json so that it can be managed by the supervisor.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.80.0
+  date: 2021-05-21T20:01:26.724Z
 - commits:
     - subject: Add boot-splash test to unmanaged suite
       hash: a6865f22ba5d5bd60f659daac113cac6ae1aa8f3
