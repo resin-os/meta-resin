@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# Copyright 2020 Balena Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+. /usr/libexec/os-helpers-logging
+
+# Remote server address.
+CONNECTIVITY_URL=https://api.balena-cloud.com/connectivity-check
+# Timeout for curl command in seconds.
+# Note that curl does not apply this timeout to DNS lookups.
+CURL_TIMEOUT=5
+# Delay in seconds between connection attempts.
+CONNECTIVITY_CHECK_DELAY=5
+
+info "Waiting for full network connectivity."
+
+while [ true ]; do
+	HTTP_CODE=$(curl -m$CURL_TIMEOUT -o "/dev/null" -k -I -s -w "%{http_code}" ${CONNECTIVITY_URL})
+	if [ "$HTTP_CODE" -eq "204" ]; then
+		break
+	fi
+	sleep $CONNECTIVITY_CHECK_DELAY
+done
+info "Full network connectivity detected."
+exit 0

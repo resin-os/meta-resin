@@ -31,6 +31,14 @@ get_hwclock_time_as_timestamp() {
 	echo "${timestamp}"
 }
 
+# Get an HTTP server header time string as a timestamp.
+# Arguments:
+#   1 - server time string (Day, DD Mon YYYY hh:mm:ss TZ)
+get_server_time_as_timestamp() {
+	local server_time_str=$1
+	echo "$(date -u "+%4Y%2m%2d%2H%2M%2S" -d "${server_time_str}")"
+}
+
 # Get a 'date' compatible string from a timestamp for display.
 # YYYYMMDDhhmmss -> YYYYMMDD hh:mm:ss
 # Arguments:
