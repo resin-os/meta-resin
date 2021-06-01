@@ -63,6 +63,27 @@ function inform {
     echo "[resin-init-flasher] INFO: $1"
 }
 
+function find_part_id {
+    DEVICE=$1
+    PARTLABEL=$2
+
+    lsblk -nlo "name,partlabel" | grep "${PARTLABEL}" | grep "${DEVICE}" | sed -e "s,^${DEVICE}p\?\([0-9][0-9]*\)[ \t]*${PARTLABEL}$,\1,"
+}
+
+function find_part_size {
+    DEVICE=$1
+    PARTID=$2
+
+    parted "/dev/${DEVICE}" unit MiB print | grep "^[ \t]*${PARTID}[ \t][ \t]*" | awk '{print $4}' | sed -e "s,\(\.0\)\?MiB,,"
+}
+
+function find_part_start {
+    DEVICE=$1
+    PARTID=$2
+
+    parted "/dev/${DEVICE}" unit MiB print | grep "^[ \t]*${PARTID}[ \t][ \t]*" | awk '{print $2}' | sed -e "s,\(\.0\)\?MiB,,"
+}
+
 ########
 # MAIN #
 ########
@@ -148,38 +169,76 @@ if [ "$LUKS" = "1" ]; then
 
     echo -e "OK\nFix" | parted ---pretend-input-tty "/dev/$internal_dev" print
 
-    parted -s "/dev/$internal_dev" -- rm 5
-    parted -s "/dev/$internal_dev" -- rm 4
-    parted -s "/dev/$internal_dev" -- rm 3
-    parted -s "/dev/$internal_dev" -- rm 2
-    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-boot 44 86
-    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-rootA 86 1112
-    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-rootB 1112 2138
-    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-state 2138 2160
-    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-data 2160 2366
+    EFI_PART_ID=$(find_part_id "$internal_dev" resin-boot)
 
     PART_PREFIX=""
-    if [ -e "/dev/${internal_dev}p1" ]; then
+    if [ -e "/dev/${internal_dev}p${EFI_PART_ID}" ]; then
         PART_PREFIX="p"
     fi
 
     # Relabel former boot partition
-    parted -s "/dev/$internal_dev" -- name 1 balena-efi
-    mlabel ::balena-efi -i "/dev/${internal_dev}${PART_PREFIX}1"
+    parted -s "/dev/$internal_dev" -- name "$EFI_PART_ID" balena-efi
+    mlabel ::balena-efi -i "/dev/${internal_dev}${PART_PREFIX}${EFI_PART_ID}"
 
-    for PART_ID in 2 3 4 5 6; do
-        PART_DEV="/dev/$internal_dev$PART_PREFIX$PART_ID"
+    # Find parition IDs
+    ROOTA_PART_ID=$(find_part_id "$internal_dev" resin-rootA)
+    ROOTB_PART_ID=$(find_part_id "$internal_dev" resin-rootB)
+    STATE_PART_ID=$(find_part_id "$internal_dev" resin-state)
+    DATA_PART_ID=$(find_part_id "$internal_dev" resin-data)
+
+    # Find partition sizes
+    BOOT_PART_SIZE=$(find_part_size "$internal_dev" "$EFI_PART_ID")
+    ROOTA_PART_SIZE=$(find_part_size "$internal_dev" "$ROOTA_PART_ID")
+    ROOTB_PART_SIZE=$(find_part_size "$internal_dev" "$ROOTB_PART_ID")
+    STATE_PART_SIZE=$(find_part_size "$internal_dev" "$STATE_PART_ID")
+    DATA_PART_SIZE=$(find_part_size "$internal_dev" "$DATA_PART_ID")
+
+    # Find the beginning of the first partition
+    FIRST_PART_ID=$(echo -e "$ROOTA_PART_ID\n$ROOTB_PART_ID\n$STATE_PART_ID\n$DATA_PART_ID" | sort | head -n 1)
+    FIRST_PART_START=$(find_part_start "$internal_dev" "$FIRST_PART_ID")
+
+    # Remove partitions that need resizing
+    parted -s "/dev/$internal_dev" -- rm "$DATA_PART_ID"
+    parted -s "/dev/$internal_dev" -- rm "$STATE_PART_ID"
+    parted -s "/dev/$internal_dev" -- rm "$ROOTB_PART_ID"
+    parted -s "/dev/$internal_dev" -- rm "$ROOTA_PART_ID"
+
+    # Create new partitions with extra space for LUKS headers
+    # LUKS header size is 2MiB
+    LUKS_HEADER_SIZE=2
+
+    BOOT_PART_END=$["$FIRST_PART_START" + "$BOOT_PART_SIZE" + "$LUKS_HEADER_SIZE"]
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-boot "$FIRST_PART_START" "$BOOT_PART_END"
+
+    ROOTA_PART_END=$["$BOOT_PART_END" + "$ROOTA_PART_SIZE" + "$LUKS_HEADER_SIZE"]
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-rootA "$BOOT_PART_END" "$ROOTA_PART_END"
+
+    ROOTB_PART_END=$["$ROOTA_PART_END" + "$ROOTB_PART_SIZE" + "$LUKS_HEADER_SIZE"]
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-rootB "$ROOTA_PART_END" "$ROOTB_PART_END"
+
+    STATE_PART_END=$["$ROOTB_PART_END" + "$STATE_PART_SIZE" + "$LUKS_HEADER_SIZE"]
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-state "$ROOTB_PART_END" "$STATE_PART_END"
+
+    DATA_PART_END=$["$STATE_PART_END" + "$DATA_PART_SIZE" + "$LUKS_HEADER_SIZE"]
+    parted -s "/dev/$internal_dev" -- unit MiB mkpart resin-data "$STATE_PART_END" "$DATA_PART_END"
+
+    for PART_NAME in resin-boot resin-rootA resin-rootB resin-state resin-data; do
+        LOOP_PART_ID=$(find_part_id "${LOOP_DEVICE#/dev/}" "$PART_NAME")
+        INTERNAL_PART_ID=$(find_part_id "$internal_dev" "$PART_NAME")
+
+        PART_DEV="/dev/$internal_dev$PART_PREFIX$INTERNAL_PART_ID"
         inform "Encrypting $PART_DEV"
         echo -n "$PASSWORD" | cryptsetup luksFormat "$PART_DEV" -
-        echo -n "$PASSWORD" | cryptsetup luksOpen "$PART_DEV" "part$PART_ID" --key-file -
-        if [ "$PART_ID" = 2 ]; then
+        echo -n "$PASSWORD" | cryptsetup luksOpen "$PART_DEV" "$PART_NAME" --key-file -
+        DM_DEV="/dev/mapper/$PART_NAME"
+        if [ "$PART_NAME" = "resin-boot" ]; then
             # Just create the FS, we will split boot and efi below
-            mkfs.ext4 -L "resin-boot" "/dev/mapper/part$PART_ID"
+            mkfs.ext4 -L "resin-boot" "$DM_DEV"
             continue
         fi
         inform "Flasing $PART_DEV"
-        dd if="${LOOP_DEVICE}p$[$PART_ID - 1]" of="/dev/mapper/part$PART_ID" bs=4M
-        sync "/dev/mapper/part$PART_ID"
+        dd if="${LOOP_DEVICE}p$LOOP_PART_ID" of="$DM_DEV" bs=4M
+        sync "$DM_DEV"
     done
 
     losetup -d "$LOOP_DEVICE"
@@ -328,8 +387,8 @@ fi
 umount $INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT
 
 if [ "$LUKS" = "1" ]; then
-    for PART_ID in 2 3 4 5 6; do
-        cryptsetup luksClose "part$PART_ID"
+    for PART_NAME in resin-boot resin-rootA resin-rootB resin-state resin-data; do
+        cryptsetup luksClose "$PART_NAME"
     done
 fi
 
