@@ -1,6 +1,12 @@
 Change log
 -----------
 
+# v2.79.8
+## (2021-06-02)
+
+* meta-balena-common: conf: switch back to go 1.12 [Joseph Kogut]
+* meta-balena-common: devtools: add back Go 1.12 recipes [Joseph Kogut]
+
 # v2.79.7
 ## (2021-05-26)
 

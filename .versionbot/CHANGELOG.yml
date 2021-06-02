@@ -1,4 +1,34 @@
 - commits:
+    - subject: 'meta-balena-common: conf: switch back to go 1.12'
+      hash: ee7fa979be56ed3ad41cc0544ca75d84cf107308
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+    - subject: 'meta-balena-common: devtools: add back Go 1.12 recipes'
+      hash: 0a93ef6063431a776f3b52c17db39e35c1f2d6b5
+      body: |
+        Go 1.16 requires more changes to balena engine to make it compatible.
+        Add back the 1.12 recipes in the mean time, leaving the new recipes in
+        place.
+
+        Some modifications had to be made to several include files, including
+        renaming them to include GO_BASEVERSION, and reordering the requires in
+        the package recipes to make GO_BASEVERSION available.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+  version: 2.79.8
+  date: 2021-06-02T20:00:07.950Z
+- commits:
     - subject: 'meta-balena: rename connectivity packagegroup'
       hash: 8f54c4137f8bb8a83a05d9963cdb1565778c737b
       body: |
