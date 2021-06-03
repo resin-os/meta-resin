@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# Copyright 2021 Balena Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#
+# Migrate current state in apps.json from v2 to v3 target state
+#
+
+set -e
+
+. /usr/libexec/os-helpers-api
+
+#
+# MAIN
+#
+
+DATA_MOUNT="/mnt/data"
+APPS_JSON_NAME="apps.json"
+APPS_JSON_PATH="${DATA_MOUNT}/${APPS_JSON_NAME}"
+
+if [ -f "${APPS_JSON_PATH}" ]; then
+	if _version=$(os_helpers_get_current_state_version "${APPS_JSON_PATH}"); then
+		if [ "${_version}" = "v2" ]; then
+			cp "${APPS_JSON_PATH}" "${APPS_JSON_PATH}.v2"
+			sync
+			echo "[INFO] before_current-state: Stored current state from previous OS"
+		fi
+	else
+		echo "[ERROR] Invalid current state file in previous OS"
+		exit 1
+	fi
+else
+	echo "[INFO] No current state to migrate"
+fi

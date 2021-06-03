@@ -1,7 +1,11 @@
 #!/bin/sh
 
+SUPERVISOR_NAME="balena_supervisor"
+
 # shellcheck disable=SC1091
 . /usr/sbin/balena-config-vars
+# shellcheck disable=SC1091
+. /usr/libexec/os-helpers-api
 
 # Handle apps.json existence
 # Keep this before computing SUPERVISOR_CONTAINER_IMAGE_ID
@@ -9,15 +13,15 @@ APPSJSON=/mnt/data/apps.json
 if [ ! -f "$APPSJSON" ]; then
     if [ -d "$APPSJSON" ]; then
         rm -rf "$APPSJSON"
-        balena rm -f balena_supervisor || true
+        balena rm -f "${SUPERVISOR_NAME}" || true
         echo '{}' > "$APPSJSON"
     elif [ ! -e "$APPSJSON" ]; then
         echo '{}' > "$APPSJSON"
     fi
 fi
 
-SUPERVISOR_IMAGE_ID=$(balena inspect --format='{{.Id}}' "$SUPERVISOR_IMAGE:$SUPERVISOR_TAG")
-SUPERVISOR_CONTAINER_IMAGE_ID=$(balena inspect --format='{{.Image}}' balena_supervisor || echo "")
+SUPERVISOR_IMAGE_ID=$(balena inspect --format='{{.Id}}' "$SUPERVISOR_IMAGE")
+SUPERVISOR_CONTAINER_IMAGE_ID=$(balena inspect --format='{{.Image}}' "${SUPERVISOR_NAME}" || echo "")
 
 # If custom CA exists populate the NODE_EXTRA_CA_CERTS env variable as node ignores the system-wide CA bundle
 BALENA_ROOT_CA_FILE="/usr/share/ca-certificates/balena/balenaRootCA.crt"
@@ -40,7 +44,7 @@ hasValueChanged() {
 
 configIsUnchanged() {
 
-    SUPERVISOR_CONTAINER_ENV_JSON="$(balena inspect balena_supervisor | jq '.[0].Config.Env | map(.| { (.[0:index("=")]): .[index("=")+1:] }) | add')"
+    SUPERVISOR_CONTAINER_ENV_JSON="$(balena inspect "${SUPERVISOR_NAME}" | jq '.[0].Config.Env | map(.| { (.[0:index("=")]): .[index("=")+1:] }) | add')"
 
     if hasValueChanged "BOOT_MOUNTPOINT"       "$BOOT_MOUNTPOINT" "$SUPERVISOR_CONTAINER_ENV_JSON" || \
     hasValueChanged "MIXPANEL_TOKEN"        "$MIXPANEL_TOKEN" "$SUPERVISOR_CONTAINER_ENV_JSON" || \
@@ -48,7 +52,7 @@ configIsUnchanged() {
     hasValueChanged "LED_FILE"              "${LED_FILE}" "$SUPERVISOR_CONTAINER_ENV_JSON" || \
     hasValueChanged "LISTEN_PORT"           "$LISTEN_PORT" "$SUPERVISOR_CONTAINER_ENV_JSON" || \
     hasValueChanged "NODE_EXTRA_CA_CERTS"   "$NODE_EXTRA_CA_CERTS" "$SUPERVISOR_CONTAINER_ENV_JSON" || \
-    hasValueChanged "SUPERVISOR_IMAGE"      "${SUPERVISOR_IMAGE}:${SUPERVISOR_TAG}" "$SUPERVISOR_CONTAINER_ENV_JSON"; then
+    hasValueChanged "SUPERVISOR_IMAGE"      "${SUPERVISOR_IMAGE}" "$SUPERVISOR_CONTAINER_ENV_JSON"; then
         echo "Container config has changed!"
         return 1
     else
@@ -58,8 +62,8 @@ configIsUnchanged() {
 }
 
 runSupervisor() {
-    balena rm --force balena_supervisor || true
-    balena run --privileged --name balena_supervisor \
+    balena rm --force "${SUPERVISOR_NAME}" || true
+    balena run --privileged --name "${SUPERVISOR_NAME}" \
         --restart=always \
         --net=host \
         --cidenv=SUPERVISOR_CONTAINER_ID \
@@ -80,8 +84,10 @@ runSupervisor() {
         -e "LED_FILE=${LED_FILE}" \
         -e "LISTEN_PORT=$LISTEN_PORT" \
         -e "NODE_EXTRA_CA_CERTS=${NODE_EXTRA_CA_CERTS}" \
-        -e "SUPERVISOR_IMAGE=${SUPERVISOR_IMAGE}:${SUPERVISOR_TAG}" \
-        "${SUPERVISOR_IMAGE}:${SUPERVISOR_TAG}"
+        -e "SUPERVISOR_IMAGE=${SUPERVISOR_IMAGE}" \
+	--label="${BALENA_HOSTOS_APP_UUID}=${SUPERVISOR_APP_UUID}" \
+	--label="${BALENA_HOSTOS_SERVICE_NAME}=${SUPERVISOR_SERVICE_NAME}" \
+        "${SUPERVISOR_IMAGE}"
 }
 
 if [ ! -d "/resin-data/balena-supervisor" ]; then
@@ -96,7 +102,7 @@ if [ -z "$SUPERVISOR_IMAGE_ID" ]; then
     systemctl start update-balena-supervisor
 elif [ "$SUPERVISOR_IMAGE_ID" = "$SUPERVISOR_CONTAINER_IMAGE_ID" ] && configIsUnchanged; then
     # Supervisor image exists, and the current supervisor container is created from
-    balena start --attach balena_supervisor
+    balena start --attach "${SUPERVISOR_NAME}"
 else
     # No supervisor container exists or there's a different supervisor image to run
     runSupervisor

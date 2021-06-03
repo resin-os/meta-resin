@@ -1,0 +1,80 @@
+#!/bin/sh
+
+BALENA_HOSTOS_BLOCK_CLASS="io.balena.image.class"
+BALENA_HOSTOS_BLOCK_STORE="io.balena.image.store"
+BALENA_HOSTOS_BLOCK_REQUIRES_REBOOT="io.balena.image.requires-reboot"
+BALENA_HOSTOS_APP_UUID="io.balena.app-uuid"
+BALENA_HOSTOS_APP_ID="io.balena.app-id"
+BALENA_HOSTOS_RELEASE_VERSION="io.balena.release-version"
+BALENA_HOSTOS_SERVICE_NAME="io.balena.service-name"
+
+# Fetch target state from API
+#
+# Inputs:
+# $1: Device UUID
+# $2: Balena API environment
+# $3: Balena API token
+#
+# Outputs:
+# Target state JSON in stdout
+#
+os_helpers_fetch_target_state() {
+	_device_uuid="$1"
+	_api_env="$2"
+	_token="$3"
+	_target_state_json=$(curl --silent --header "Authorization: Bearer ${_token}" --header "User-Agent:" --compressed "${_api_env}/v6/supervisor_release?\$select=supervisor_version,image_name&\$filter=should_manage__device/any(d:d/uuid%20eq%20'${_device_uuid}')" | jq -e -r '.d[0].supervisor_version,.d[0].image_name')
+	echo "${_target_state_json}" | tr "\n" " "
+}
+
+# Prints imageID from digest
+#
+# Inputs:
+# $1: Image location on Balena registry (i.e registry2.balena-staging.com/v2/<id>@sha256:<digest>)
+#
+# Outputs:
+# Target state JSON in stdout
+#
+os_helpers_imageid_from_digest() {
+	_image="$1"
+	_image_name=$(echo "${_image}" | cut -d "@" -f1)
+	_digest=$(echo "${_image}" | cut -d "@" -f2)
+	_imageid=$(balena images --filter=reference="${_image_name}" --format "{{.ID}}")
+	_digest_check=$(balena images --digests --filter=reference="${_image_name}" --format "{{.Digest}}")
+	if [ "${_digest}" = "${_digest_check}" ]; then
+		echo "${_imageid}"
+	fi
+}
+
+# Outputs current state version
+#
+# Inputs:
+# $1: Path to current state (apps.json) file
+#
+# Outputs:
+#  v2 or v3 to stdout, nothing if there is no version match
+#
+# Returns:
+# 0 if there is a version match
+# 1 if there in no current state
+# 2 if there is an unknown state version
+#
+os_helpers_get_current_state_version() {
+	_apps_json="${1}"
+	_keys=$(jq -r '.apps | keys | @tsv' "${_apps_json}" | tr "\t" " ")
+	for _id in ${_keys}; do
+		_len=${#_id}
+		# v3 current state uses 32/62 chars appUUIDs as keys
+		if [ "${_len}" = 32 ] || [ "${_len}" = 62 ]; then
+			echo "v3"
+			return 0
+		# v2 current state uses appIDs as keys which are just incremental numbers
+		elif [ "${_len}" -gt 0 ]; then
+			echo "v2"
+			return 0
+		else
+			2>& echo "[WARN] os_helpers_check_current_state: Unknown current state version"
+			return 2
+		fi
+	done
+	return 1
+}

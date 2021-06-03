@@ -64,7 +64,6 @@ if [ -f $CONFIG_PATH ]; then
          DEVICE_ID=\(.deviceId // "")
          DEVICE_TYPE=\(.deviceType // "")
          DNS_SERVERS=\(.dnsServers // "8.8.8.8")
-         HOSTEXT_IMAGES=\(.hostappExtensions // "")
          LISTEN_PORT=\(.listenPort // "")
          MIXPANEL_TOKEN=\(.mixpanelToken // "")
          NTP_SERVERS=\(.ntpServers // "")

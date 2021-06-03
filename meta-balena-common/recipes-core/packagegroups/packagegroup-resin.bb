@@ -18,7 +18,6 @@ RDEPENDS_${PN} += " \
     mobynit \
     docker-disk \
     hostapp-update \
-    hostapp-extensions-update \
     hostapp-update-hooks \
     resin-filesystem-expand \
     resin-persistent-logs \
@@ -29,6 +28,7 @@ RDEPENDS_${PN} += " \
     balena-rollback \
     timeinit \
     systemd-zram-swap \
+    update-data-store \
     ${@bb.utils.contains('BALENA_STORAGE', 'aufs', 'aufs-util-auplink', '', d)} \
     ${BALENA_SUPERVISOR} \
     "
