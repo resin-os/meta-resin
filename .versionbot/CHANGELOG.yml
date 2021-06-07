@@ -1,4 +1,18 @@
 - commits:
+    - subject: 'mobyinit: Set GOPATH not to use Go''s ${USER}/go default'
+      hash: 5031510daf071ede5cb32628390cf4de55e6f428
+      body: |
+        Fixes #2176
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.79.11
+  date: 2021-06-07T09:38:41.641Z
+- commits:
     - subject: 'supervisor: Remove symlink to legacy resin sysconfig'
       hash: 2b04b5a776c9e996ded53dd7c405755c6543d7e5
       body: ''
