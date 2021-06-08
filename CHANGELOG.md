@@ -1,6 +1,21 @@
 Change log
 -----------
 
+# v2.81.0
+## (2021-06-08)
+
+* hostapp-update-hooks: Add current state migration [Alex Gonzalez]
+* package-group-resin: Replace hostapp-extensions-update [Alex Gonzalez]
+* Add update-data-store to replace update-hostapp-extensions [Alex Gonzalez]
+* Add version and service name labels to supervisor container [Alex Gonzalez]
+* Add a os-helper-api target script library [Alex Gonzalez]
+* resin-device-register: Use supervisor version label instead of tag [Alex Gonzalez]
+* README: Add a section for the overlay data blocks [Alex Gonzalez]
+* docker-disk: Allow to define a custom CA [Alex Gonzalez]
+* Install data store images [Alex Gonzalez]
+* Revert "docker-disk: Add the host extension images to the data partition" [Alex Gonzalez]
+* Revert "resin-vars: Parse the HOSTEXT_IMAGES variable from config.json" [Alex Gonzalez]
+
 # v2.80.0
 ## (2021-06-07)
 
