@@ -1,4 +1,192 @@
 - commits:
+    - subject: 'hostapp-update-hooks: Add current state migration'
+      hash: 3e9e77f815dc9d269635b748d22af299047c6c5d
+      body: >
+        When updating from a v2 target state to a v3 target state, the apps.json
+
+        file that corresponds to the current state needs to be migrated.
+
+
+        The commit adds the before, forward and commit hooks for the migration
+        to
+
+        take place.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'package-group-resin: Replace hostapp-extensions-update'
+      hash: 2a82e708835ae212ddd7387132570425599ba925
+      body: |
+        The script is now called update-data-store to reflect architectural
+        design changes.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Add update-data-store to replace update-hostapp-extensions
+      hash: 698a6e52b51449377993ea9ed169106c310db6d6
+      body: |
+        This script is now called by the supervisor with the target state.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Changelog-entry: Add update-data-store to replace update-hostapp-extensions
+        changelog-entry: Add update-data-store to replace update-hostapp-extensions
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Add version and service name labels to supervisor container
+      hash: cdf1e8ae5ea88025ed845a93dc3305538ffab1af
+      body: |
+        The supervisor requires containers to be labeled with the app UUID and
+        the service name to handle them correctly.
+
+        Also, change variable names to reflect the supervisor is being pulled
+        from Balena's registry and not dockerhub.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Changelog-entry: Add version and service name labels to supervisor container
+        changelog-entry: Add version and service name labels to supervisor container
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Add a os-helper-api target script library
+      hash: ee4df63af07b7fa0a8af234ee7c95f0d1a370949
+      body: |
+        The update scripts need to share some common API related code.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Changelog-entry: Add a os-helper-api target script library
+        changelog-entry: Add a os-helper-api target script library
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'resin-device-register: Use supervisor version label instead of tag'
+      hash: 2eaa67a3f871e014e4639ae7c3e3ac3e2522a16e
+      body: >
+        This is just a name change that reflects the wider change that the
+
+        supervisor is no longer fetched from dockerhub but from Balena's
+        registry.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'README: Add a section for the overlay data blocks'
+      hash: 4595cd2ee9b64b41cbeb5a79c2ce430d1de8c28a
+      body: |
+        Add a short section that explains the caveats of using data overlays and
+        the way to disable them.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'docker-disk: Allow to define a custom CA'
+      hash: f809b5c237da2260829bd4bd4bfce1b2f999c4f7
+      body: |
+        When building images against openBalena a custom CA needs to be used so
+        secure API calls are possible.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Install data store images
+      hash: 79eeb344b704cff6575c46ac14c0696592f178ba
+      body: |
+        Handle the installation of hostOS images with a target store in the data
+        partition as specified in the hostOS app.
+
+        Also, create an apps.json file that defines the preloaded default state
+        of the system
+      footer:
+        Change-type: minor
+        change-type: minor
+        Changelog-entry: Install data store images
+        changelog-entry: Install data store images
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: >-
+        Revert "docker-disk: Add the host extension images to the data
+        partition"
+      hash: 172c4c2280bf659a0f1f9c414cc9ae4fe6cdc67d
+      body: >
+        This reverts commit cd44a94cf1646828832070417a2deb9236b0f5ee.
+
+
+        The preloaded hostapp extensions are no longer recorded in the read-only
+        rootfs
+
+        but on the apps.json file.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'Revert "resin-vars: Parse the HOSTEXT_IMAGES variable from config.json"'
+      hash: 9dc8760d34e9b280a20654a498f3d80de7a7e325
+      body: |
+        This reverts commit 761f517f955f829e12b2c7f0a0f88830ded39e13.
+
+        The hostapp extension information will no longer be added to config.json
+        but to apps.json so that it can be managed by the supervisor.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.81.0
+  date: 2021-06-08T08:16:37.659Z
+- commits:
+    - subject: Revert Go 1.16 recipes
+      hash: 4303346ccda6d3e3c4f83cc3782c73a6d1adb494
+      body: |
+        balena-engine requires fixes backported from upstream to support a newer
+        version of Go, and retaining the new recipes while switching back to the
+        supported version of Go using the GOVERSION variable is still a work in
+        process. Revert these changes for now. We can merge the new recipes
+        back in once the build issues are resolved.
+
+        This reverts commit f36dbd96684f9adfc5ce6faa57aa26fc4ba8e34e, reversing
+        changes made to b228aea720fd1536ac6904b1886b2d445a582fc9.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Changelog-entry: Revert Go 1.16 recipes
+        changelog-entry: Revert Go 1.16 recipes
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+  version: 2.80.0
+  date: 2021-06-07T08:31:41.036Z
+- commits:
     - subject: 'supervisor: Remove symlink to legacy resin sysconfig'
       hash: 2b04b5a776c9e996ded53dd7c405755c6543d7e5
       body: ''
