@@ -10,12 +10,13 @@ SRC_URI = " \
     file://os-helpers-fs \
     file://os-helpers-logging \
     file://os-helpers-time \
+    file://os-helpers-api \
 "
 S = "${WORKDIR}"
 
 inherit allarch
 
-PACKAGES = "${PN}-fs ${PN}-logging ${PN}-time"
+PACKAGES = "${PN}-fs ${PN}-logging ${PN}-time ${PN}-api"
 
 do_install() {
     install -d ${D}${libexecdir}
@@ -23,9 +24,11 @@ do_install() {
         ${WORKDIR}/os-helpers-fs \
         ${WORKDIR}/os-helpers-logging \
         ${WORKDIR}/os-helpers-time \
+        ${WORKDIR}/os-helpers-api \
         ${D}${libexecdir}
 }
 
 FILES_${PN}-fs = "${libexecdir}/os-helpers-fs"
 FILES_${PN}-logging = "${libexecdir}/os-helpers-logging"
 FILES_${PN}-time = "${libexecdir}/os-helpers-time"
+FILES_${PN}-api = "${libexecdir}/os-helpers-api"

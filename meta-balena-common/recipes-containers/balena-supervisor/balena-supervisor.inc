@@ -7,14 +7,14 @@
 # Licensed under the Apache-2.0 license, see COPYING.Apache-2.0 for details
 
 # Balena supervisor supported CPU archtectures
-SUPERVISOR_REPOSITORY_armv5 ?= "balena/armel-supervisor"
-SUPERVISOR_REPOSITORY_armv6 ?= "balena/rpi-supervisor"
-SUPERVISOR_REPOSITORY_armv7a ?= "balena/armv7hf-supervisor"
-SUPERVISOR_REPOSITORY_armv7ve ?= "balena/armv7hf-supervisor"
-SUPERVISOR_REPOSITORY_aarch64 ?= "balena/aarch64-supervisor"
-SUPERVISOR_REPOSITORY_x86 ?= "balena/i386-supervisor"
-SUPERVISOR_REPOSITORY_x86-64 ?= "balena/amd64-supervisor"
-SUPERVISOR_REPOSITORY_intel-quark ?= "balena/i386-nlp-supervisor"
+SUPERVISOR_APP_armv5 ?= "armel-supervisor"
+SUPERVISOR_APP_armv6 ?= "rpi-supervisor"
+SUPERVISOR_APP_armv7a ?= "armv7hf-supervisor"
+SUPERVISOR_APP_armv7ve ?= "armv7hf-supervisor"
+SUPERVISOR_APP_aarch64 ?= "aarch64-supervisor"
+SUPERVISOR_APP_x86 ?= "i386-supervisor"
+SUPERVISOR_APP_x86-64 ?= "amd64-supervisor"
+SUPERVISOR_APP_intel-quark ?= "i386-nlp-supervisor"
 
-# Balena supervisor default tag
-SUPERVISOR_TAG ?= "v12.7.0"
+# Balena supervisor default version
+SUPERVISOR_VERSION ?= "v12.5.10"
