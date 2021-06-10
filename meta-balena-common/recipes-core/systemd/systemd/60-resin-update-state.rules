@@ -8,6 +8,8 @@ ENV{ID_FS_LABEL_ENC}=="resin-*", ENV{BALENA_FS_USE}=="?*", SYMLINK+="disk/by-sta
 ENV{ID_FS_LABEL_ENC}=="resin-root*", ENV{BALENA_UPDATE_STATE}=="?*", SYMLINK+="disk/by-state/$env{BALENA_UPDATE_STATE}"
 
 # Identify extra partitions by their partition name - for example the jetson BSP partitions
+ENV{ID_PART_ENTRY_NAME}=="", GOTO="resin_update_state_end"
+
 ENV{ID_PART_ENTRY_NAME}!="resin-*", IMPORT{program}="/lib/udev/resin_update_state_probe $devnode $env{ID_PART_ENTRY_NAME} $parent"
 ENV{ID_PART_ENTRY_NAME}!="resin-*", ENV{BALENA_FS_USE}=="?*", SYMLINK+="disk/by-state/$env{BALENA_FS_USE}"
 
