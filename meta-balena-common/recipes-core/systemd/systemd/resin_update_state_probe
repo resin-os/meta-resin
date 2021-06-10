@@ -31,9 +31,12 @@ parent=$3
 
 # If the UUIDs have been regenerated in this boot, the root UUID is stored
 # on a temporary file, otherwise fetch from the kernel command line
-new_root="/tmp/initramfs/bootparam_root"
-if [ -f "${new_root}" ]; then
-	ruuid=$(cat "${new_root}" | cut -c6-)
+new_root_tmp="/tmp/initramfs/bootparam_root"
+new_root_run="/run/initramfs/bootparam_root"
+if [ -f "${new_root_tmp}" ]; then
+	ruuid=$(cat "${new_root_tmp}" | cut -c6-)
+elif [ -f "${new_root_run}" ]; then
+	ruuid=$(cat "${new_root_run}" | cut -c6-)
 else
 	ruuid=$(get_cmdline_root_uuid)
 fi
