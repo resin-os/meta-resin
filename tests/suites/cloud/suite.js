@@ -81,8 +81,11 @@ module.exports = {
 
     // Push a single container application
     this.log(`Cloning getting started repo...`);
+    this.suite.context.set({
+      appPath: `${__dirname}/app`
+    })
     await exec(
-      `git clone https://github.com/balena-io-examples/balena-node-hello-world.git ${__dirname}/app`
+      `git clone https://github.com/balena-io-examples/balena-node-hello-world.git ${this.context.get().appPath}`
     );
     this.log(`Pushing release to app...`);
     const initialCommit = await this.context.get().cloud.pushReleaseToApp(this.context.get().balena.application, `${__dirname}/app`)
