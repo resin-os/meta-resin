@@ -10,113 +10,10 @@ const fs = require("fs");
 const fse = require("fs-extra");
 const { join } = require("path");
 const { homedir } = require("os");
-const imagefs = require('balena-image-fs');
 const Docker = require('dockerode');
-const retry = require('bluebird-retry');
 const exec = require('bluebird').promisify(require('child_process').exec);
 
-const fetchOS = async (that, version) => {
-    if (version === "latest") {
-      // make sure we always flash the development variant of the latest
-      // OS release
-      const versions = await that.context.get().sdk.balena.models.os.getSupportedVersions(
-          that.suite.deviceType.slug,
-        );
-      version = versions.latest.replace('prod', 'dev');
-    }
-
-    const path = join(that.suite.options.tmpdir, `base_${version}.img`)
-
-    let attempt = 0;
-    const dlOp = async () => {
-      attempt++;
-      that.log(`Fetching balenaOS version ${version}, attempt ${attempt}...`);
-
-      // TODO take version into account for caching...
-      // how does this work for `latest`?
-      if (await fse.pathExists(path)) {
-        that.log(`[Cached used]`);
-        return path;
-      }
-
-      // TODO progress
-      const stream = await that.context.get().sdk.getDownloadStream(
-          that.suite.deviceType.slug,
-          version,
-        );
-      await new Promise((resolve, reject) => {
-        stream.pipe(fs.createWriteStream(path))
-          .on("finish", resolve)
-          .on("error", reject);
-        });
-
-      return path
-    };
-
-    that.suite.teardown.register(async () => {
-        console.log("Base image teardown");
-        fse.unlinkSync(path);
-      });
-
-    return retry(dlOp, { max_retries: 3, interval: 500 });
-};
-
-// configureOS
-// FIXME all of this can go once https://github.com/balena-os/leviathan/pull/433
-// becomes available
-const injectBalenaConfiguration = (image, configuration) => {
-  // taken from: https://github.com/balena-io/leviathan/blob/master/core/lib/components/os/balenaos.js#L31
-  return imagefs.interact(image, 1, async (fs) => {
-    return require("util").promisify(fs.writeFile)("/config.json",
-      JSON.stringify(configuration));
-  });
-};
-const injectNetworkConfiguration = async (image, configuration) => {
-  // taken from: https://github.com/balena-io/leviathan/blob/master/core/lib/components/os/balenaos.js#L43
-  if (configuration.wireless == null) {
-    return;
-  }
-  if (configuration.wireless.ssid == null) {
-    throw new Error(
-      `Invalide wireless configuration: ${configuration.wireless}`,
-    );
-  }
-
-  const wifiConfiguration = [
-    '[connection]',
-    'id=balena-wifi',
-    'type=wifi',
-    '[wifi]',
-    'hidden=true',
-    'mode=infrastructure',
-    `ssid=${configuration.wireless.ssid}`,
-    '[ipv4]',
-    'method=auto',
-    '[ipv6]',
-    'addr-gen-mode=stable-privacy',
-    'method=auto',
-  ];
-
-  if (configuration.wireless.psk) {
-    Reflect.apply(wifiConfiguration.push, wifiConfiguration, [
-      '[wifi-security]',
-      'auth-alg=open',
-      'key-mgmt=wpa-psk',
-      `psk=${configuration.wireless.psk}`,
-    ]);
-  }
-
-  await imagefs.interact(image, 1, async (fs) => {
-    return require("util").promisify(fs.writeFile)("/system-connections/balena-wifi",
-      wifiConfiguration.join('\n'));
-  });
-};
-const configureOS = async (that, imagePath, network, configJson) => {
-  that.log(`Configuring base image`);
-  await injectBalenaConfiguration(imagePath, configJson);
-  await injectNetworkConfiguration(imagePath, network);
-};
-
+// Starts registry, uploads target image to registry
 const runRegistry = async (that, seedWithImage) => {
   const docker = new Docker();
   const registryImage = 'registry:2';
@@ -199,7 +96,7 @@ const runRegistry = async (that, seedWithImage) => {
   await image.remove();
 
   // this parses the IP of the wlan0 interface which is the gateway for the DUT
-  // TODO should this be a common func?
+  // Replace the logic below when this merged https://github.com/balena-os/leviathan/pull/442
   const testbotIP = (await exec(`ip addr | awk '/inet.*wlan0/{print $2}' | cut -d\/ -f1`)).trim();
   const hostappRef = `${testbotIP}:5000/hostapp@${digest}`;
   that.log(`Registry upload complete: ${hostappRef}`);
@@ -211,6 +108,7 @@ const runRegistry = async (that, seedWithImage) => {
   })
 }
 
+// Executes the HUP process on the DUT
 const doHUP = async (that, test, mode, hostapp, target) => {
   test.comment(`Starting HUP`);
 
@@ -226,7 +124,6 @@ const doHUP = async (that, test, mode, hostapp, target) => {
         );
       }
       test.comment(`Running: hostapp-update -f ${hostapp}`);
-      // TODO do we need to print the output here?
       hupLog = await that.context.get().worker.executeCommandInHostOS(
         `hostapp-update -f ${hostapp}`,
         target,
@@ -252,50 +149,12 @@ const doHUP = async (that, test, mode, hostapp, target) => {
   test.comment(`Finished HUP`);
 };
 
-const doReboot = async (that, test, target) => {
-  test.comment(`Rebooting DUT`);
-  await that.context.get().worker.executeCommandInHostOS(
-    `touch /tmp/reboot-check && systemd-run --on-active=2 reboot`,
-    target,
-  );
-  await that.context.get().utils.waitUntil(async () => {
-    return (
-      (await that.context.get().worker.executeCommandInHostOS(
-        '[[ ! -f /tmp/reboot-check ]] && echo pass || echo fail',
-        target,
-      )) === 'pass'
-    );
-  }, true);
-  test.comment(`DUT is back`);
-};
-
-const getOSVersion = async (that, target) => {
-  // maybe https://github.com/balena-io/leviathan/blob/master/core/lib/components/balena/sdk.js#L210
-  // will do? that one works entirely on the device though...
-  const output = await that.context.get().worker
-    .executeCommandInHostOS(
-      "cat /etc/os-release",
-      target
-    );
-  let match;
-  output
-    .split("\n")
-    .every(x => {
-      if (x.startsWith("VERSION=")) {
-        match = x.split("=")[1];
-        return false;
-      }
-      return true;
-    })
-  return match.replace(/"/g, '');
-}
-
 const initDUT = async (that, test, target) => {
   test.comment(`Initializing DUT for HUP test`);
 
   test.comment(`Flashing DUT`);
   await that.context.get().worker.off();
-  await that.context.get().worker.flash(that.context.get().hup.baseOsImage);
+  await that.context.get().worker.flash(that.context.get().os.image.path);
   await that.context.get().worker.on();
 
   test.comment(`Waiting for DUT to be reachable`);
@@ -319,7 +178,7 @@ const initDUT = async (that, test, target) => {
   test.comment(`DUT ready`);
 
   that.teardown.register(async () => {
-    await that.context.get().hup.archiveLogs(this,
+    await that.context.get().hup.archiveLogs(that,
       test, target);
   })
 }
@@ -364,7 +223,7 @@ module.exports = {
       worker: new Worker(this.suite.deviceType.slug, this.getLogger()),
     });
 
-    // Network definitions {{{
+    // Network definitions
     if (this.suite.options.balenaOS.network.wired === true) {
       this.suite.options.balenaOS.network.wired = {
         nat: true,
@@ -381,13 +240,28 @@ module.exports = {
     } else {
       delete this.suite.options.balenaOS.network.wireless;
     }
-    // }}}
+
+    this.suite.context.set({
+      hup: {
+        doHUP:        doHUP,
+        initDUT:      initDUT,
+        runRegistry:  runRegistry,
+        archiveLogs:  archiveLogs,
+      }
+    })
+
+    // Downloads the balenaOS image we hup from
+    const path = await this.context.get().sdk.fetchOS(
+      this.suite.options.balenaOS.download.version,
+      this.suite.deviceType.slug
+    );
 
     this.suite.context.set({
       os: new BalenaOS(
         {
           deviceType: this.suite.deviceType.slug,
           network: this.suite.options.balenaOS.network,
+          image: `${path}`,
           configJson: {
             uuid: this.suite.options.balenaOS.config.uuid,
             os: {
@@ -403,19 +277,11 @@ module.exports = {
         },
         this.getLogger()
       ),
-
-      hup: {
-        doHUP:        doHUP,
-        doReboot:     doReboot,
-        fetchOS:      fetchOS,
-        configureOS:  configureOS,
-        getOSVersion: getOSVersion,
-        initDUT:      initDUT,
-        runRegistry:  runRegistry,
-        archiveLogs:  archiveLogs,
-      },
+      hupOs: new BalenaOS(
+        { },
+        this.getLogger()
+      ),
     });
-
     this.suite.teardown.register(() => {
       this.log("Worker teardown");
       return this.context.get().worker.teardown();
@@ -426,30 +292,13 @@ module.exports = {
       .get()
       .worker.network(this.suite.options.balenaOS.network);
 
-    // Unpack target OS image .gz
-    await this.context.get().os.fetch({
-      type: this.suite.options.balenaOS.download.type,
-      version: this.suite.options.balenaOS.download.version,
-      releaseInfo: this.suite.options.balenaOS.releaseInfo,
-    });
-
-    const path = await this.context.get().hup.fetchOS(
-      this,
-      this.suite.options.balenaOS.download.version,
-    );
-    await this.context.get().hup.configureOS(
-      this,
-      path,
-      this.suite.options.balenaOS.network,
-      this.context.get().os.configJson,
-    );
-    this.suite.context.set({
-      hup: {
-        baseOsImage: path
-      }
-    });
-
-    await this.context.get().hup.runRegistry(this, this.context.get().os.image.path);
+    // Unpack both base and target OS images
+    await this.context.get().os.fetch();
+    await this.context.get().hupOs.fetch();
+    // configure the image
+    await this.context.get().os.configure()
+    // Starts the registry
+    await this.context.get().hup.runRegistry(this, this.context.get().hupOs.image.path);
   },
   tests: [
     "./tests/smoke",
