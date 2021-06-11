@@ -21,11 +21,11 @@ module.exports = {
     test.comment(`Reducing amount of time needed for rollback-health to fail`)
     // reduce number of failures needed to trigger rollback
     await this.context.get().worker.executeCommandInHostOS(
-        `sed -i -e "s/COUNT=.*/COUNT=1/g" -e "s/TIMEOUT=.*/TIMEOUT=10/g" $(find /mnt/sysroot/inactive/ | grep "bin/rollback-health")`,
-        this.context.get().link,
-      );
+      `sed -i -e "s/COUNT=.*/COUNT=1/g" -e "s/TIMEOUT=.*/TIMEOUT=10/g" $(find /mnt/sysroot/inactive/ | grep "bin/rollback-health")`,
+      this.context.get().link,
+    );
 
-    await this.context.get().hup.doReboot(this, test, this.context.get().link);
+    await this.context.get().worker.rebootDut(this.context.get().link);
 
     const after = await this.context.get().hup.getOSVersion(
       this, this.context.get().link);
