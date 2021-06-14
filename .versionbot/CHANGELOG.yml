@@ -1,4 +1,136 @@
 - commits:
+    - subject: 'resin-init-flasher: Use TPM for LUKS passphrase manipulation'
+      hash: e808dde34bbd105c3d7ac550af25d3f1413c5743
+      body: >
+        Done:
+
+        - Generate a LUKS passphrase using the TPM's RNG
+
+        - Make it possible to define an extra passphrase using
+        EXTRA_LUKS_PASSPHRASE
+
+        - Encrypt the passphrase using the TPM and store it in EFI partition
+
+
+        Missing:
+
+        - PCR protection - at this state any booted OS can decrypt the
+        passphrase
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Michal Toman <michalt@balena.io>
+        signed-off-by: Michal Toman <michalt@balena.io>
+      author: Michal Toman
+      nested: []
+    - subject: 'resin_update_state_probe: Look for bootparam_root in /run as well'
+      hash: 21cf4af1c20ce18bdcf04e86d6d21fc035a464d2
+      body: >
+        bootparam_root is created under /run/initramfs by fsuuidsinit and /run
+
+        is later moved to /tmp when rootfs is mounted. resin_update_state_probe
+
+        only looks into /tmp at this moment therefore it fails to find
+
+        bootparam_root if udev calls it before /run is moved. This means
+        sometimes
+
+        /dev/disk/by-state symlinks are not populated properly. This only
+        affects
+
+        the first boot when fsuuidsinit is actually executed.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Michal Toman <michalt@balena.io>
+        signed-off-by: Michal Toman <michalt@balena.io>
+      author: Michal Toman
+      nested: []
+    - subject: 'resin-update-state.rules: do not run for unnamed partitions'
+      hash: cc9f7ff1f31423a5e0ce6ce29140b218d5fac1e2
+      body: >
+        When udev runs resin_update_state_probe for a non-balena partition
+
+        and ENV{ID_PART_ENTRY_NAME} is undefined it still gets expanded to
+        random
+
+        garbage accidentally lying at the eventual memory address. This can
+        create
+
+        a mess in /dev/disk/by-state e.g. when external devices are connected.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Michal Toman <michalt@balena.io>
+        signed-off-by: Michal Toman <michalt@balena.io>
+      author: Michal Toman
+      nested: []
+    - subject: 'resin-mounts: mount EFI partition if it is disctinct from boot'
+      hash: d273d580329c668d0b13434a0610e068823229d3
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Michal Toman <michalt@balena.io>
+        signed-off-by: Michal Toman <michalt@balena.io>
+      author: Michal Toman
+      nested: []
+    - subject: 'resindataexpander: also resize LUKS volume if necessary'
+      hash: 0e5608632ad020206fb935b17d065ef7a2b397a9
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Michal Toman <michalt@balena.io>
+        signed-off-by: Michal Toman <michalt@balena.io>
+      author: Michal Toman
+      nested: []
+    - subject: 'resin_update_state_probe: do not skip device mapper devices'
+      hash: 10dc905b88d2584e4d70556099d1dd25d0d3b335
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Michal Toman <michalt@balena.io>
+        signed-off-by: Michal Toman <michalt@balena.io>
+      author: Michal Toman
+      nested: []
+    - subject: 'grub.cfg_internal_template: Unlock and use encrypted partitions'
+      hash: c551abe8fc38cad3bb3d2d140bdb30419c6c780c
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Michal Toman <michalt@balena.io>
+        signed-off-by: Michal Toman <michalt@balena.io>
+      author: Michal Toman
+      nested: []
+    - subject: 'resin-init-flasher: Add support for opt-in full disk encryption'
+      hash: 5ae9466d995536791f23c0e9699e8e57746e02b7
+      body: |
+        If resin-init-flasher.conf has LUKS=1 flasher will:
+        - Add extra 2MB to each partition for the LUKS header
+        - Split resin-boot into EFI and linux boot
+        - LUKS-format the partitions, copy image contents after unlocking
+        - Propagate signatures for secure boot
+        - Use LUKS_PASSWORD or default "balenabeta" as passphrase
+
+        Missing:
+        - Progress report
+        - Random password with TPM2
+        - Read partition sizes prior to repartitioning, they are hardcoded now
+
+        The default behavior (LUKS undefined) is unchanged
+      footer:
+        Change-Type: minor
+        change-type: minor
+        Signed-off-by: Michal Toman <michalt@balena.io>
+        signed-off-by: Michal Toman <michalt@balena.io>
+      author: Michal Toman
+      nested: []
+  version: 2.81.0
+  date: 2021-06-14T16:39:08.316Z
+- commits:
     - subject: >-
         update-balena-supervisor: Refactor script to ensure target version is
         ran

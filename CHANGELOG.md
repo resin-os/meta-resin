@@ -1,6 +1,18 @@
 Change log
 -----------
 
+# v2.81.0
+## (2021-06-14)
+
+* resin-init-flasher: Use TPM for LUKS passphrase manipulation [Michal Toman]
+* resin_update_state_probe: Look for bootparam_root in /run as well [Michal Toman]
+* resin-update-state.rules: do not run for unnamed partitions [Michal Toman]
+* resin-mounts: mount EFI partition if it is disctinct from boot [Michal Toman]
+* resindataexpander: also resize LUKS volume if necessary [Michal Toman]
+* resin_update_state_probe: do not skip device mapper devices [Michal Toman]
+* grub.cfg_internal_template: Unlock and use encrypted partitions [Michal Toman]
+* resin-init-flasher: Add support for opt-in full disk encryption [Michal Toman]
+
 # v2.80.2
 ## (2021-06-09)
 
