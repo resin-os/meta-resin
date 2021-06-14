@@ -156,8 +156,46 @@ fi
 inform "$internal_dev will be used for flashing."
 
 if [ "$LUKS" = "1" ]; then
-    # TODO: Hardcoded password now, randomize with TPM2
-    PASSWORD="${LUKS_PASSWORD:-balenabeta}"
+    # Generate password and encrypt it using the TPM
+    TPM="${TPM:-/dev/tpmrm0}"
+    if [ -e "$TPM" ]; then
+        inform "$TPM will be used for LUKS operations"
+        export TPM2TOOLS_TCTI="device:$TPM"
+    else
+        inform "$TPM not found, will falling back to autodetection"
+    fi
+
+    # Generate a random passphrase, 32 bytes long
+    LUKS_PASSPHRASE="$(tpm2_getrandom 32)"
+
+    # Create a primary key pair within the TPM
+    PRIMARY_CTX=$(mktemp)
+    tpm2_createprimary -c "$PRIMARY_CTX"
+
+    # Create the actual key pair that will be used for encrypting the LUKS passphrase
+    # rsa2048 seems most universal, not all TPM chips support more than 2048
+    PRIVATE_KEY=$(mktemp)
+    PUBLIC_KEY=$(mktemp)
+    tpm2_create -C "$PRIMARY_CTX" -G rsa2048 -r "$PRIVATE_KEY" -u "$PUBLIC_KEY"
+
+    # Load the generated key pair into the TPM
+    # The userpsace tooling allows this to be done together with tpm2_create above, not needing
+    # to store the keys as files, but not all TPM chips support that.
+    KEY_CTX=$(mktemp)
+    tpm2_load -C "$PRIMARY_CTX" -r "$PRIVATE_KEY" -u "$PUBLIC_KEY" -c "$KEY_CTX"
+
+    # Make the key persistent and save the handle
+    PERSISTENT_KEY_HANDLE=$(mktemp)
+    tpm2_evictcontrol -c "$KEY_CTX" -o "$PERSISTENT_KEY_HANDLE"
+
+    # Encrypt the passphrase using the newly generated key pair
+    ENCRYPTED_PASSPHRASE=$(mktemp)
+    echo -n "$LUKS_PASSPHRASE" | tpm2_rsaencrypt -c "$PERSISTENT_KEY_HANDLE" -o "$ENCRYPTED_PASSPHRASE"
+
+    # Remove files unnecessary for decryption
+    rm -f "$PRIMARY_CTX" "$PRIVATE_KEY" "$PUBLIC_KEY" "$KEY_CTX"
+
+    # Attach the image to a loop device
     LOOP_DEVICE=$(losetup --find --show --partscan "/opt/$BALENA_IMAGE")
 
     # Copy header and resin-boot partition
@@ -228,8 +266,14 @@ if [ "$LUKS" = "1" ]; then
 
         PART_DEV="/dev/$internal_dev$PART_PREFIX$INTERNAL_PART_ID"
         inform "Encrypting $PART_DEV"
-        echo -n "$PASSWORD" | cryptsetup luksFormat "$PART_DEV" -
-        echo -n "$PASSWORD" | cryptsetup luksOpen "$PART_DEV" "$PART_NAME" --key-file -
+        echo -n "$LUKS_PASSPHRASE" | cryptsetup luksFormat "$PART_DEV" -
+        if [ "x$EXTRA_LUKS_PASSPHRASE" != "x" ]; then
+            TMP_PWDFILE=$(mktemp)
+            echo -n "$EXTRA_LUKS_PASSPHRASE" > "$TMP_PWDFILE"
+            echo -n "$LUKS_PASSPHRASE" | cryptsetup luksAddKey "$PART_DEV" "$TMP_PWDFILE" --key-file -
+            rm -f "$TMP_PWDFILE"
+        fi
+        echo -n "$LUKS_PASSPHRASE" | cryptsetup luksOpen "$PART_DEV" "$PART_NAME" --key-file -
         DM_DEV="/dev/mapper/$PART_NAME"
         if [ "$PART_NAME" = "resin-boot" ]; then
             # Just create the FS, we will split boot and efi below
@@ -304,12 +348,14 @@ if ! mount /dev/disk/by-label/resin-boot $INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT; 
 fi
 
 if [ "$LUKS" = "1" ]; then
+    # Split EFI and boot partitions
     EFI_MOUNT_DIR="$INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/EFI"
     mkdir "$EFI_MOUNT_DIR"
     if ! mount /dev/disk/by-label/BALENA-EFI "$EFI_MOUNT_DIR"; then
         fail "Failed to mount disk labeled as 'BALENA-EFI'."
     fi
 
+    # Move all non-EFI files to boot partition
     for FILE in $(ls "$EFI_MOUNT_DIR"); do
         if [ "$FILE" = "EFI" ]; then
             continue
@@ -317,6 +363,10 @@ if [ "$LUKS" = "1" ]; then
 
         mv "$EFI_MOUNT_DIR/$FILE" "$INTERNAL_DEVICE_BOOT_PART_MOUNTPOINT/"
     done
+
+    # Store files necessary for TPM decryption to the EFI partitions
+    mv "$PERSISTENT_KEY_HANDLE" "$EFI_MOUNT_DIR/balena-luks.ctx"
+    mv "$ENCRYPTED_PASSPHRASE" "$EFI_MOUNT_DIR/balena-luks.enc"
 
     INTERNAL_DEVICE_BOOTLOADER_CONFIG_PATH="/EFI$INTERNAL_DEVICE_BOOTLOADER_CONFIG_PATH"
 fi
