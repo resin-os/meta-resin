@@ -1,6 +1,11 @@
 Change log
 -----------
 
+# v2.80.4
+## (2021-06-14)
+
+* image-balena: Decouple boot directory generation from rootfs task [Alex Gonzalez]
+
 # v2.80.3
 ## (2021-06-10)
 

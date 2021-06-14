@@ -1,4 +1,26 @@
 - commits:
+    - subject: 'image-balena: Decouple boot directory generation from rootfs task'
+      hash: a33d8c93a0bff9deeaeb496604bc85a287dcf3a7
+      body: >
+        The boot partition needs to be generated before creating the
+        balenaos-img
+
+        but is not part of the root filesystem generation.
+
+
+        The decoupling allows to build just the docker rootfs image without
+
+        having to build the balenaos-img target.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.80.4
+  date: 2021-06-14T10:59:00.985Z
+- commits:
     - subject: Add oneshot service to migrate supervisor state config
       hash: d965d23fe60db6254eaabd81a0d48b5718e01a3a
       body: |
