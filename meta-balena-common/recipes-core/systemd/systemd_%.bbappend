@@ -41,14 +41,6 @@ FILES_${PN} += " \
     "
 
 do_install_append() {
-    if ${@bb.utils.contains('DISTRO_FEATURES','development-image','false','true',d)}; then
-	# Non-development image
-	if $(readlink autovt@.service) == "getty@*.service"; then
-            rm ${D}/lib/systemd/system/autovt@.service
-        fi
-        find ${D} -name "getty@*.service" -delete
-    fi
-
     install -d -m 0755 ${D}/${sysconfdir}/systemd/journald.conf.d
     install -m 06444 ${WORKDIR}/journald-balena-os.conf ${D}/${sysconfdir}/systemd/journald.conf.d
 
@@ -92,6 +84,12 @@ do_install_append() {
 
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/dev-zram0.swap ${D}${systemd_unitdir}/system/dev-zram0.swap
+
+    # Do not start getty on production mode
+    sed -i '/^\[Unit\]/a ConditionPathExists=/var/volatile/development-features' ${D}${systemd_unitdir}/system/getty@.service
+    sed -i '/^\[Unit\]/a PartOf=development-features.target' ${D}${systemd_unitdir}/system/getty.target
+    sed -i '/^\[Unit\]/a After=development-features.service' ${D}${systemd_unitdir}/system/getty.target
+    sed -i '/^\[Unit\]/a Requires=development-features.service' ${D}${systemd_unitdir}/system/getty.target
 }
 
 PACKAGES =+ "${PN}-zram-swap"
