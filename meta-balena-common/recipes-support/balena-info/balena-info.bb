@@ -30,13 +30,11 @@ do_install() {
         install -d ${D}${sysconfdir}/systemd/system/multi-user.target.wants/
         install -m 0644 ${WORKDIR}/balena-info@.service ${D}${systemd_unitdir}/system/
 
-        if ${@bb.utils.contains('DISTRO_FEATURES','development-image','true','false',d)}; then
-            # Enable services
-            for ttydev in ${TTYS}; do
-                ln -sf ${systemd_unitdir}/system/balena-info@.service \
-                    ${D}${sysconfdir}/systemd/system/multi-user.target.wants/balena-info@$ttydev.service
-            done
-        fi
+        # Enable services
+        for ttydev in ${TTYS}; do
+            ln -sf ${systemd_unitdir}/system/balena-info@.service \
+                ${D}${sysconfdir}/systemd/system/multi-user.target.wants/balena-info@$ttydev.service
+        done
 
         sed -i -e 's,@BASE_BINDIR@,${base_bindir},g' \
             -e 's,@SBINDIR@,${sbindir},g' \

@@ -1,7 +1,10 @@
 [Unit]
 Description=Balena info on %I
-After=balena-supervisor.service
+Requires=development-features.service
+After=balena-supervisor.service development-features.service
 ConditionVirtualization=!docker
+ConditionPathExists=/var/volatile/development-features
+PartOf=development-features.target
 
 [Service]
 Type=oneshot
