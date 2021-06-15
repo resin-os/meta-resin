@@ -24,7 +24,6 @@ inherit core-image image-balena features_check
 SPLASH += "plymouth-balena-theme"
 
 IMAGE_FEATURES_append = " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'development-image', 'debug-tweaks', '', d)} \
     splash \
     ssh-server-openssh \
     read-only-rootfs \
