@@ -32,9 +32,9 @@ POKY_DEFAULT_DISTRO_FEATURES_remove = "ptest"
 POKY_DEFAULT_DISTRO_FEATURES_remove = "wayland"
 DISTRO_FEATURES_DEFAULT_remove = "x11"
 
-# Development image mode
-DEVELOPMENT_IMAGE ?= "0"
-DISTRO_FEATURES_append = " ${@bb.utils.contains('DEVELOPMENT_IMAGE','1','development-image','',d)}"
+# OS development image
+OS_DEVELOPMENT ?= "0"
+DISTRO_FEATURES_append = " ${@bb.utils.contains('OS_DEVELOPMENT','1','osdev-image','',d)}"
 
 # Providers
 PREFERRED_PROVIDER_docker ?= "docker"
@@ -56,7 +56,7 @@ BALENA_IMAGE_FLAG_FILE = "balena-image"
 BALENA_FLASHER_FLAG_FILE = "balena-image-flasher"
 
 # Kernel command line
-OS_KERNEL_CMDLINE ?= "${@bb.utils.contains('DEVELOPMENT_IMAGE','1','','console=null quiet splash vt.global_cursor_default=0 consoleblank=0',d)}"
+OS_KERNEL_CMDLINE ?= "${@bb.utils.contains('OS-DEVELOPMENT','1','', 'console=null quiet splash vt.global_cursor_default=0 consoleblank=0',d)}"
 
 # Initramfs
 INITRAMFS_IMAGE = "balena-image-initramfs"
