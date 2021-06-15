@@ -1,12 +1,12 @@
-DESCRIPTION = "Resin info"
+DESCRIPTION = "Balena info ascii art"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${BALENA_COREBASE}/COPYING.Apache-2.0;md5=89aea4e17d99a7cacdbeed46a0096b10"
 
 ALLOW_EMPTY_${PN} = "1"
 
 SRC_URI = " \
-    file://resin-info \
-    file://resin-info@.service \
+    file://balena-info \
+    file://balena-info@.service \
     "
 S = "${WORKDIR}"
 
@@ -23,18 +23,18 @@ do_build[noexec] = "1"
 
 do_install() {
     install -d ${D}${sbindir}/
-    install -m 0755 ${WORKDIR}/resin-info ${D}${sbindir}/
+    install -m 0755 ${WORKDIR}/balena-info ${D}${sbindir}/
 
     if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
         install -d ${D}${systemd_unitdir}/system/
         install -d ${D}${sysconfdir}/systemd/system/multi-user.target.wants/
-        install -m 0644 ${WORKDIR}/resin-info@.service ${D}${systemd_unitdir}/system/
+        install -m 0644 ${WORKDIR}/balena-info@.service ${D}${systemd_unitdir}/system/
 
         if ${@bb.utils.contains('DISTRO_FEATURES','development-image','true','false',d)}; then
             # Enable services
             for ttydev in ${TTYS}; do
-                ln -sf ${systemd_unitdir}/system/resin-info@.service \
-                    ${D}${sysconfdir}/systemd/system/multi-user.target.wants/resin-info@$ttydev.service
+                ln -sf ${systemd_unitdir}/system/balena-info@.service \
+                    ${D}${sysconfdir}/systemd/system/multi-user.target.wants/balena-info@$ttydev.service
             done
         fi
 
