@@ -1,12 +1,13 @@
 [Unit]
 Description=OpenSSH Per-Connection Daemon
 Wants=sshdgenkeys.service os-sshkeys.service
-Requires=resin-state.service
-After=resin-state.service sshdgenkeys.service os-sshkeys.service
+Requires=resin-state.service development-features.service
+After=resin-state.service sshdgenkeys.service os-sshkeys.service development-features.service
 
 [Service]
 Environment="SSHD_OPTS="
 EnvironmentFile=-/etc/default/ssh
+EnvironmentFile=-/var/volatile/development-features
 ExecStartPre=-@SBINDIR@/ssh_keys_merger
 ExecStart=-/usr/sbin/sshd -i $SSHD_OPTS
 ExecReload=/bin/kill -HUP $MAINPID
