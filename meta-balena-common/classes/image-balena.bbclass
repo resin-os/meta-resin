@@ -361,6 +361,7 @@ python os_release_extra_data() {
         f.writelines(extra_data)
 }
 
+ROOTFS_POSTPROCESS_COMMAND_remove = "zap_empty_root_password"
 ROOTFS_POSTPROCESS_COMMAND += " \
     generate_compressed_kernel_module_deps ; \
     add_image_flag_file ; \
