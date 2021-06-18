@@ -19,7 +19,7 @@ python __anonymous() {
 # A static patch won't apply to all u-boot versions, therefore
 # we edit the sources to silent the console in production builds.
 do_configure_append() {
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'development-image', 'false', 'true', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'osdev-image', 'false', 'true', d)}; then
         if grep -qP "void puts\(const char \*s\)" ${S}/common/console.c ; then
             line=$(grep -nP "void puts\(const char \*s\)" ${S}/common/console.c | cut -f1 -d:)
             sed -i "$(expr ${line} \+ 2) i return;" ${S}/common/console.c
@@ -46,7 +46,7 @@ OS_BOOTCOUNT_LIMIT ?= "1"
 
 # These options go into the device headerfile via config_resin.h
 CONFIG_RESET_TO_RETRY ?= "1"
-CONFIG_BOOT_RETRY_TIME ?= "${@bb.utils.contains('DISTRO_FEATURES', 'development-image', '-1', '15', d)}"
+CONFIG_BOOT_RETRY_TIME ?= "${@bb.utils.contains('DISTRO_FEATURES', 'osdev-image', '-1', '15', d)}"
 
 CONFIG_CMD_FS_UUID = "1"
 
