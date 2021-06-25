@@ -1,6 +1,11 @@
 Change log
 -----------
 
+# v2.80.10
+## (2021-06-25)
+
+* Remove legacy resinhup images. [Alex Gonzalez]
+
 # v2.80.9
 ## (2021-06-21)
 
