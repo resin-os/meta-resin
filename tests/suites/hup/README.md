@@ -18,10 +18,10 @@ Test the transition between balenaOS releases via the `hostapp-update` mechanism
 # current tests
 
 * [smoke test](./tests/smoke.js): check if we can HUP successfully
+* [rollback-altboot](./tests/rollback-altboot.js): check we can recover new OS not booting
+* [rollback-health](./tests/rollback-health.js): check we can recover from new OS being unhealhty
 
 ## TODO
 
 * [self-serve-dashboard](./tests/self-serve-dashboard.js)
-* [rollback-altboot](./tests/rollback-altboot.js)
-* [rollback-health](./tests/rollback-health.js)
 * [storage migration](./tests/storagemigration.js)
