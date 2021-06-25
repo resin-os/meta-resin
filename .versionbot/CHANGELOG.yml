@@ -1,4 +1,21 @@
 - commits:
+    - subject: Remove legacy resinhup images.
+      hash: a194170fbecd799af161405703668e61da59276b
+      body: |
+        These image types are no longer generated and are not used for hostOS
+        updates any longer.
+      footer:
+        Changelog-entry: Remove legacy resinhup images.
+        changelog-entry: Remove legacy resinhup images.
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.80.10
+  date: 2021-06-25T12:39:29.343Z
+- commits:
     - subject: 'balena-engine: refactor systemd service'
       hash: 8227a61f6bef6d93cc6a5acd0ef93a2012079964
       body: >
