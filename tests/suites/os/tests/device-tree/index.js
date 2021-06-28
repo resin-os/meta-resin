@@ -60,7 +60,8 @@ module.exports = {
 						this.context.get().link,
 					);
 
-				// Setting the device tree variables using Supervisor API 
+				// Setting the device tree variables using Supervisor API
+				// This request reboots the DUT
 				const setTargetState = await request({
 					method: "POST",
 					headers: {

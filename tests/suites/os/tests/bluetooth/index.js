@@ -1,6 +1,5 @@
 const Bluebird = require("bluebird");
 const exec = Bluebird.promisify(require("child_process").exec);
-const retry = require("bluebird-retry");
 
 module.exports = {
   title: "Bluetooth tests",
@@ -53,7 +52,7 @@ module.exports = {
         test.is(
           scan.includes(btNameParsed[2]),
           true,
-          "DUT should be able to see testbot when scanning for bluetooth devicess"
+          "DUT should be able to see testbot when scanning for bluetooth devices"
         );
       },
     },
