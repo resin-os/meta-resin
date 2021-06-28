@@ -15,8 +15,6 @@
 
 "use strict";
 
-const { delay } = require("bluebird");
-
 module.exports = {
   title: "Container healthcheck test",
   os: {
@@ -35,12 +33,32 @@ module.exports = {
     const state = await this.context
       .get()
       .worker.pushContainerToDUT(ip, __dirname, "healthcheck");
+
+    // wait until status of container is "healthy"
+    await this.context.get().utils.waitUntil(async () => {
+      test.comment("Waiting to container to report as healthy...");
+      // retrieve healthcheck events
+      let health = JSON.parse(await this.context
+        .get()
+        .worker.executeCommandInHostOS(
+          `printf '["null"'; balena events --filter container=${state.services.healthcheck} --filter event=health_status --since 1 --until "$(date +%Y-%m-%dT%H:%M:%S.%NZ)" --format '{{json .}}' | while read LINE; do printf ",$LINE"; done; printf ']'`,
+          ip
+        )
+      )
+      let status = health.reduce(function (result, element) {
+        if (element.status != null) {
+          result.push(element.status);
+        }
+        return result;
+      }, [])
+
+      return status.includes("health_status: healthy")
+
+    }, false);
+
     const out = await this.context
       .get()
       .worker.executeCommandInContainer("rm /tmp/health", "healthcheck", ip);
-
-    // wait for 10s before checking for health status to give
-    await delay(1000 * 5);
 
     let status = [];
     // Use waitUntil, because sometimes it takes time for the container to report as unhealthy, so we want to be able to re-check
@@ -66,11 +84,11 @@ module.exports = {
       test.comment(`Container is currently: "${status[status.length - 1]}"`);
 
       return status.includes("health_status: unhealthy"); // Exit this block when container goes to "unhealthy"
-    });
+    }, false);
 
     // check that the container went from healthy to unhealthy
     test.ok(
-      (status.includes("health_status: unhealthy") && status.includes("health_status: healthy")),
+      (status.includes("health_status: unhealthy")),
       "Container should go from healthy to unhealthy"
     );
   },
