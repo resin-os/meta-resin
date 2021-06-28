@@ -105,31 +105,8 @@ module.exports = {
                 this.context.get().link
               );
 
-            // Start reboot check
-            await this.context
-              .get()
-              .worker.executeCommandInHostOS(
-                "touch /tmp/reboot-check",
-                this.context.get().link
-              );
-            test.comment("Starting reboot...");
-            await this.context
-              .get()
-              .worker.executeCommandInHostOS(
-                "systemd-run --on-active=2 /sbin/reboot",
-                this.context.get().link
-              );
-            await this.context.get().utils.waitUntil(async () => {
-              test.comment("Waiting for DUT to come back online...");
-              return (
-                (await this.context
-                  .get()
-                  .worker.executeCommandInHostOS(
-                    '[[ ! -f /tmp/reboot-check ]] && echo "pass"',
-                    this.context.get().link
-                  )) === "pass"
-              );
-            }, false);
+            // Rebooting the DUT
+            await this.context.get().worker.rebootDut(this.context.get().link)
 
             await this.context
               .get()
@@ -146,31 +123,8 @@ module.exports = {
                 this.context.get().link
               );
 
-            // Start reboot check
-            await this.context
-              .get()
-              .worker.executeCommandInHostOS(
-                "touch /tmp/reboot-check",
-                this.context.get().link
-              );
-            test.comment("Starting reboot...");
-            await this.context
-              .get()
-              .worker.executeCommandInHostOS(
-                "systemd-run --on-active=2 /sbin/reboot",
-                this.context.get().link
-              );
-            await this.context.get().utils.waitUntil(async () => {
-              test.comment("Waiting for DUT to come back online...");
-              return (
-                (await this.context
-                  .get()
-                  .worker.executeCommandInHostOS(
-                    '[[ ! -f /tmp/reboot-check ]] && echo "pass"',
-                    this.context.get().link
-                  )) === "pass"
-              );
-            }, false);
+            // Rebooting the DUT
+            await this.context.get().worker.rebootDut(this.context.get().link)
           },
         };
       }),
