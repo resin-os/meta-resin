@@ -166,11 +166,7 @@ fi
 
 # Pull target version.
 echo "Pulling supervisor $image_name:$tag..."
-if $DOCKER pull "$image_name:$tag"; then
-    $DOCKER rm --force balena_supervisor || true
-else
-    error_handler "supervisor pull failed"
-fi
+$DOCKER pull "$image_name:$tag" || error_handler "supervisor pull failed"
 
 # Ensure device has newly pulled image as the version to run
 setSupervisorConfig

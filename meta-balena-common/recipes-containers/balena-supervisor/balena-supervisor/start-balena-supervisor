@@ -58,7 +58,7 @@ configIsUnchanged() {
 }
 
 runSupervisor() {
-    balena rm --force balena_supervisor || true
+    balena rm --force balena_supervisor resin_supervisor 2>/dev/null || true
     balena run --privileged --name balena_supervisor \
         --restart=always \
         --net=host \
