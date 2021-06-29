@@ -1,6 +1,11 @@
 Change log
 -----------
 
+# v2.80.11
+## (2021-06-29)
+
+* supervisor: Consolidate supervisor container removal [Kyle Harding]
+
 # v2.80.10
 ## (2021-06-24)
 
