@@ -1,4 +1,19 @@
 - commits:
+    - subject: 'supervisor: Consolidate supervisor container removal'
+      hash: 01dc174e79cfc79f2dbf8a819249f6ad1686b1b7
+      body: |
+        Avoid removing supervisor containers in 3 different places
+        and consolidate the steps into start-balena-supervisor.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 2.80.11
+  date: 2021-06-29T15:12:26.231Z
+- commits:
     - subject: 'hostapp-update-hooks: Migrate supervisor database'
       hash: cad3e4cc49c4fbc275a5448c38e2da550e596573
       body: |
