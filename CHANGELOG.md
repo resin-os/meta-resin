@@ -1,6 +1,34 @@
 Change log
 -----------
 
+# v2.80.10
+## (2021-06-29)
+
+* tests/hup: Add storagemigration tests [Robert Günzler]
+
+<details>
+<summary> Update balena-engine to 19.03.21 [Robert Günzler] </summary>
+
+> ## balena-engine-19.03.21
+> ### (2021-06-25)
+> 
+> * Lock destination layers while delta is being processed [Robert Günzler]
+> 
+> ## balena-engine-19.03.20
+> ### (2021-06-17)
+> 
+> * pkg/storagemigration: poperly handle errors during state creation [Robert Günzler]
+> 
+> ## balena-engine-19.03.19
+> ### (2021-06-10)
+> 
+> * pkg/storagemigration: allow writing logs to separate file [Robert Günzler]
+> * storagemigration: defer commit to next start [Robert Günzler]
+> 
+</details>
+
+* tests: Add hup test suite [Robert Günzler]
+
 # v2.80.9
 ## (2021-06-21)
 
