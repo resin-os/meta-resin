@@ -15,6 +15,8 @@
 
 "use strict";
 
+const { delay } = require("bluebird");
+
 module.exports = {
   title: "Container healthcheck test",
   os: {
@@ -28,6 +30,7 @@ module.exports = {
     },
   },
   run: async function (test) {
+    await delay(1000 * 60);
     const ip = await this.context.get().worker.ip(this.context.get().link);
 
     const state = await this.context
@@ -81,10 +84,11 @@ module.exports = {
         }
         return result;
       }, [])
+
       test.comment(`Container is currently: "${status[status.length - 1]}"`);
 
       return status.includes("health_status: unhealthy"); // Exit this block when container goes to "unhealthy"
-    }, false);
+    }, false, 30);
 
     // check that the container went from healthy to unhealthy
     test.ok(
