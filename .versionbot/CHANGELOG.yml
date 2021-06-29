@@ -1,4 +1,126 @@
 - commits:
+    - subject: 'tests/hup: Add storagemigration tests'
+      hash: d36a2f1e0dd8edc68676647fb535f6322ba3ecc9
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Robert Günzler <robertg@balena.io>
+        signed-off-by: Robert Günzler <robertg@balena.io>
+      author: Robert Günzler
+      nested: []
+    - subject: Update balena-engine to 19.03.21
+      hash: 7754e158e2988b3fd0ff8c17e4c47bb80f32f437
+      body: |
+        Update balena-engine from 19.03.18 to 19.03.21
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Robert Günzler <robertg@balena.io>
+        signed-off-by: Robert Günzler <robertg@balena.io>
+      author: Robert Günzler
+      nested:
+        - commits:
+            - subject: Lock destination layers while delta is being processed
+              hash: 0ad4281e11e4d3ef263010787aecd244c0ce333d
+              body: >
+                During fingerpinting of the source image the destination layers
+                are not
+
+                exepmt from being released (e.g. when `balena image rm <iid>`)
+                is run
+
+                simultaneously.
+
+                Similarly when processing the destination layers to generate
+                deltas we
+
+                only hold one reference at a time, leaving the subsequent layers
+
+                vulnerable to the same issues.
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Robert Günzler <robertg@balena.io>
+                signed-off-by: Robert Günzler <robertg@balena.io>
+              author: Robert Günzler
+              nested: []
+          version: balena-engine-19.03.21
+          date: 2021-06-25T12:17:21.340Z
+        - commits:
+            - subject: >-
+                pkg/storagemigration: poperly handle errors during state
+                creation
+              hash: b8170db554ac1d1abb3adcfe1f6265701e9147c5
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Robert Günzler <robertg@balena.io>
+                signed-off-by: Robert Günzler <robertg@balena.io>
+              author: Robert Günzler
+              nested: []
+          version: balena-engine-19.03.20
+          date: 2021-06-17T12:37:04.408Z
+        - commits:
+            - subject: 'pkg/storagemigration: allow writing logs to separate file'
+              hash: 77536d3866ac706f049a02d2eed44a7df1cb779c
+              body: >
+                This can be used to keep a record of failed migrations.
+
+                Only runs if BALENA_MIGRATE_OVERLAY_LOGFILE is set to a path on
+                disk.
+
+                The log file will be deleted if there are no errors.
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Robert Günzler <robertg@balena.io>
+                signed-off-by: Robert Günzler <robertg@balena.io>
+              author: Robert Günzler
+              nested: []
+            - subject: 'storagemigration: defer commit to next start'
+              hash: bd1628e67136b78ca7e7c83c5569666207d28a84
+              body: >
+                With this change the aufs data is kept around until the next
+                time we
+
+                start. If we find both an aufs AND an overlay2 storage root, we
+                cleanup
+
+                the aufs data.
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Robert Günzler <robertg@balena.io>
+                signed-off-by: Robert Günzler <robertg@balena.io>
+              author: Robert Günzler
+              nested: []
+          version: balena-engine-19.03.19
+          date: 2021-06-10T15:42:25.482Z
+    - subject: 'tests: Add hup test suite'
+      hash: 1d8f110af97ee4763f6d7d42f2995a3b104a3fda
+      body: |
+        Add smoke test
+
+        Resolve `latest` to dev variant
+
+        If we want the serial logs of the DUT the image that is flashed needs to
+        be the development variant. The `latest` shortcut however always
+        resolves to the production image. We manually resolve the version to fix
+        this.
+
+        Change image name for consistent docker image pulls
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+        signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+      author: Robert Günzler
+      nested: []
+  version: 2.80.10
+  date: 2021-06-29T09:53:55.483Z
+- commits:
     - subject: 'balena-engine: refactor systemd service'
       hash: 8227a61f6bef6d93cc6a5acd0ef93a2012079964
       body: >
