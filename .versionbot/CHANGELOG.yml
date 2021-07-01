@@ -1,4 +1,27 @@
 - commits:
+    - subject: speed up tests
+      hash: 6546a26ae303c90c5e3020c5ac4c514593da2c27
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Ryan Cooke <ryan@balena.io>
+        signed-off-by: Ryan Cooke <ryan@balena.io>
+      author: rcooke-warwick
+      nested: []
+    - subject: 'add more testlodge tests, that involve cloud'
+      hash: 1fd3f2ad984266fdd20f555f57487ea64a85afe9
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Ryan Cooke <ryan@balena.io>
+        signed-off-by: Ryan Cooke <ryan@balena.io>
+      author: rcooke-warwick
+      nested: []
+  version: 2.80.11
+  date: 2021-07-01T14:12:28.436Z
+- commits:
     - subject: 'hostapp-update-hooks: Migrate supervisor database'
       hash: cad3e4cc49c4fbc275a5448c38e2da550e596573
       body: |
