@@ -1,6 +1,12 @@
 Change log
 -----------
 
+# v2.80.11
+## (2021-07-01)
+
+* speed up tests [rcooke-warwick]
+* add more testlodge tests, that involve cloud [rcooke-warwick]
+
 # v2.80.10
 ## (2021-06-24)
 
