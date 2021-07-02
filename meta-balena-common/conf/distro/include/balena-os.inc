@@ -90,8 +90,8 @@ BAD_RECOMMENDATIONS += "shared-mime-info"
 PREFERRED_VERSION_upx_arm = "3.94"
 PREFERRED_VERSION_upx-native_arm = "3.94"
 
-# let's pin linux-firmware to the version we imported from Poky zeus-22.0.1 release
-PREFERRED_VERSION_linux-firmware = "20190815"
+# let's pin linux-firmware to the version we imported from Poky hardknott release
+PREFERRED_VERSION_linux-firmware = "20210511"
 
 # Preferred rust version
 PREFERRED_VERSION_rust-native = "1.36.0"
