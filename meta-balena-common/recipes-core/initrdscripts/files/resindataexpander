@@ -1,6 +1,7 @@
 #!/bin/sh
 
 FREESPACE_LIMIT=10
+MBR_MAX_SECTORS=$(((1 << 32) - 1))
 datapart=$(get_state_path_from_label "resin-data")
 datapartdev=$(basename "$(readlink -f "${datapart}")")
 datadev=$(lsblk "$(readlink -f "$datapart")" -n -o PKNAME)
@@ -9,7 +10,12 @@ get_part_table_type() {
 	parted -s "$1" print | grep "Partition Table" | tr -d " " |cut -d ":" -f2
 }
 
+get_device_sector_count() {
+	parted -m "$1" unit s print | grep /dev/ | cut -d ":" -f2 | tr -d "s"
+}
+
 pttype=$(get_part_table_type "/dev/${datadev}")
+sectorcnt=$(get_device_sector_count "/dev/${datadev}")
 
 resindataexpander_enabled() {
 	# On flasher avoid expanding partition
@@ -44,13 +50,23 @@ resindataexpander_run() {
 		if [ "$(echo "$freespace" \> $FREESPACE_LIMIT | bc -l)" = "1" ]; then
 			# msdos partition types with more than 4 partitions need to
 			# convert the 4th in an extended partition
+			end=-1
 			if [ "${pttype}" = "msdos" ] && [ "${part_number}" -gt 4 ]; then
 				info "resindataexpander: Expand extended partition... "
-				parted -s "/dev/$datadev" -- resizepart 4 -1s
+				# MBR partition tables only support 32-bit addressing of sectors,
+				# which limits disks with 512 byte sectors to 2 TB. Handle
+				# MBR partitioned disks by resizing the data partition to
+				# the max usable space in this case.
+				if [ "$sectorcnt" -gt "$MBR_MAX_SECTORS" ]; then
+					msg "MBR partition table only supports 2 TB addressing," \
+						"the rest of the disk won't be usable"
+									end=$MBR_MAX_SECTORS;
+				fi
+				parted -s "/dev/$datadev" -- resizepart 4 "${end}s"
 				info "resindataexpander: Finished expanding extended partition."
 			fi
 			info "resindataexpander: Expand data partition... "
-			parted -s "/dev/$datadev" -- resizepart "${part_number}" 100%
+			parted -s "/dev/$datadev" -- resizepart "${part_number}" "${end}s"
 			info "resindataexpander: Finished expanding data partition."
 			partprobe
 			sync
