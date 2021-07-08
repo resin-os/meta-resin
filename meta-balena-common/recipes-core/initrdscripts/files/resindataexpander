@@ -28,7 +28,7 @@ resindataexpander_enabled() {
     # to fix it. If GPT is already fixed, nothing else happens.
     # This currently only works in interactive mode
     if [ "${pttype}" = "gpt" ]; then
-	    echo "Fix" | parted  ---pretend-input-tty /dev/${datadev} print 2>&1 > /dev/null
+	    echo "Fix" | parted  ---pretend-input-tty /dev/"${datadev}" print 2>&1 > /dev/null
 	    partprobe
 	    sync
     fi
