@@ -1,67 +1,83 @@
 #!/bin/sh
 
 FREESPACE_LIMIT=10
+MBR_MAX_SECTORS=$(((1 << 32) - 1))
 datapart=$(get_state_path_from_label "resin-data")
-datapartdev=$(basename $(readlink -f "${datapart}"))
+datapartdev=$(basename "$(readlink -f "${datapart}")")
 datadev=$(lsblk "$(readlink -f "$datapart")" -n -o PKNAME)
 
 get_part_table_type() {
-    parted -s "$1" print | grep "Partition Table" | tr -d " " |cut -d ":" -f2
+	parted -s "$1" print | grep "Partition Table" | tr -d " " |cut -d ":" -f2
+}
+
+get_device_sector_count() {
+	parted -m "$1" unit s print | grep /dev/ | cut -d ":" -f2 | tr -d "s"
 }
 
 pttype=$(get_part_table_type "/dev/${datadev}")
+sectorcnt=$(get_device_sector_count "/dev/${datadev}")
 
 resindataexpander_enabled() {
-    # On flasher avoid expanding partition
-    # shellcheck disable=SC2154
-    if [ "$bootparam_flasher" = "true" ]; then
-        info "Flasher detected. Avoiding expand partition mechanism."
-        return 1
-    fi
+	# On flasher avoid expanding partition
+	# shellcheck disable=SC2154
+	if [ "$bootparam_flasher" = "true" ]; then
+		info "Flasher detected. Avoiding expand partition mechanism."
+		return 1
+	fi
 
-    if ! wait4file "$datapart" "300"; then
-	    error "Timeout while waiting for data partition to be detected. Data partition expansion will not be tried."
-	    return 1
-    fi
+	if ! wait4file "$datapart" "300"; then
+		error "Timeout while waiting for data partition to be detected. Data partition expansion will not be tried."
+		return 1
+	fi
 
-    # If the secondary GPT is not the end of the disk, parted will ask
-    # to fix it. If GPT is already fixed, nothing else happens.
-    # This currently only works in interactive mode
-    if [ "${pttype}" = "gpt" ]; then
-	    echo "Fix" | parted  ---pretend-input-tty /dev/${datadev} print 2>&1 > /dev/null
-	    partprobe
-	    sync
-    fi
+	# If the secondary GPT is not the end of the disk, parted will ask
+	# to fix it. If GPT is already fixed, nothing else happens.
+	# This currently only works in interactive mode
+	if [ "${pttype}" = "gpt" ]; then
+		echo "Fix" | parted  ---pretend-input-tty /dev/"${datadev}" print > /dev/null 2>&1
+		partprobe
+		sync
+	fi
 
-    return 0
+	return 0
 }
 
 resindataexpander_run() {
-    part_number=$(cat /sys/class/block/"${datapartdev}"/partition)
+	part_number=$(cat /sys/class/block/"${datapartdev}"/partition)
 
-    # lsblk works on block devices only
-    for freespace in $(parted -m "/dev/$datadev" unit MiB print free | grep free | cut -d: -f4 | sed 's/MiB//g'); do
-        if [ "$(echo "$freespace" \> $FREESPACE_LIMIT | bc -l)" = "1" ]; then
-		# msdos partition types with more than 4 partitions need to
-		# convert the 4th in an extended partition
-		if [ "${pttype}" = "msdos" ] && [ "${part_number}" -gt 4 ]; then
-	            info "resindataexpander: Expand extended partition... "
-	            parted -s "/dev/$datadev" -- resizepart 4 -1s
-	            info "resindataexpander: Finished expanding extended partition."
-	        fi
-	        info "resindataexpander: Expand data partition... "
-	        parted -s "/dev/$datadev" -- resizepart "${part_number}" 100%
-	        info "resindataexpander: Finished expanding data partition."
-	        partprobe
-	        sync
-                # We return when we've done the expansion
-		info "Data partition at $datapart expanded."
-		# Expand filesystem
-		info "resindataexpander: Expand ext4 filesystem on ${datapart}"
-		resize2fs -f "${datapart}"
-		sync
-                return
-        fi
-    done
-    info "No data partition expanding needed."
+	# lsblk works on block devices only
+	for freespace in $(parted -m "/dev/$datadev" unit MiB print free | grep free | cut -d: -f4 | sed 's/MiB//g'); do
+		if [ "$(echo "$freespace" \> $FREESPACE_LIMIT | bc -l)" = "1" ]; then
+			# msdos partition types with more than 4 partitions need to
+			# convert the 4th in an extended partition
+			end=-1
+			if [ "${pttype}" = "msdos" ] && [ "${part_number}" -gt 4 ]; then
+				info "resindataexpander: Expand extended partition... "
+				# MBR partition tables only support 32-bit addressing of sectors,
+				# which limits disks with 512 byte sectors to 2 TB. Handle
+				# MBR partitioned disks by resizing the data partition to
+				# the max usable space in this case.
+				if [ "$sectorcnt" -gt "$MBR_MAX_SECTORS" ]; then
+					msg "MBR partition table only supports 2 TB addressing," \
+						"the rest of the disk won't be usable"
+									end=$MBR_MAX_SECTORS;
+				fi
+				parted -s "/dev/$datadev" -- resizepart 4 "${end}s"
+				info "resindataexpander: Finished expanding extended partition."
+			fi
+			info "resindataexpander: Expand data partition... "
+			parted -s "/dev/$datadev" -- resizepart "${part_number}" "${end}s"
+			info "resindataexpander: Finished expanding data partition."
+			partprobe
+			sync
+			# We return when we've done the expansion
+			info "Data partition at $datapart expanded."
+			# Expand filesystem
+			info "resindataexpander: Expand ext4 filesystem on ${datapart}"
+			resize2fs -f "${datapart}"
+			sync
+			return
+		fi
+	done
+	info "No data partition expanding needed."
 }
