@@ -2,7 +2,7 @@
 
 FREESPACE_LIMIT=10
 datapart=$(get_state_path_from_label "resin-data")
-datapartdev=$(basename $(readlink -f "${datapart}"))
+datapartdev=$(basename "$(readlink -f "${datapart}")")
 datadev=$(lsblk "$(readlink -f "$datapart")" -n -o PKNAME)
 
 get_part_table_type() {
