@@ -1,4 +1,65 @@
 - commits:
+    - subject: 'resindataexpander: expand data part to max usable size on MBR'
+      hash: 8e346d75c1933434aa3e8ea9de5ee697614b77b8
+      body: |
+        MBR formatted disks are only capable of 32-bit addressing of sectors,
+        limiting disk usage to 2 TB. In cases where the full disk cannot be
+        utilized, expand the data partition to fill the usable space, and print
+        a message.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+    - subject: 'resindataexpander: reformat spaces -> tabs'
+      hash: 032431a0a03aee1c71e50140566e10e7e586387f
+      body: |
+        Reformat to use tabs instead of spaces, according to the following vim
+        config:
+
+        :set filetype=sh noexpandtab shiftwidth=4 tabstop=4 autoindent
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+    - subject: 'resindataexpander: fix SC2069 on line 37'
+      hash: 19c3728bc36a022843ca71b5da2dc27bfa8a963f
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+    - subject: 'resindataexpander: fix SC2086 on line 37'
+      hash: 3c20a848687e4809432930cebcede34dcdce05da
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+    - subject: 'resindataexpander: fix SC2046 on line 6'
+      hash: 1f2e9d0aa4892673cea1d735cb390dd475b47553
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+  version: 2.81.1
+  date: 2021-07-09T02:18:32.640Z
+- commits:
     - subject: 'recipes-core: add a ''network connectivity wait'' service'
       hash: a6781d54c6edced457ad916cac3fec9c70d25a0a
       body: |
