@@ -17,7 +17,6 @@ BALENA_ROOT_FSTYPE = "ext4"
 do_image_balenaos_img[depends] += "balena-image:do_rootfs"
 
 IMAGE_FEATURES_append = " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'development-image', 'debug-tweaks', '', d)} \
     splash \
     read-only-rootfs \
     ssh-server-openssh \

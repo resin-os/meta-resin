@@ -1,0 +1,15 @@
+[Unit]
+Description=Balena info on %I
+Requires=development-features.service
+After=balena-supervisor.service development-features.service
+ConditionVirtualization=!docker
+ConditionPathExists=/var/volatile/development-features
+PartOf=development-features.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=@BASE_BINDIR@/bash @SBINDIR@/balena-info %I
+
+[Install]
+WantedBy=multi-user.target

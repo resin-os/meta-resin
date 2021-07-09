@@ -1,6 +1,6 @@
 [Unit]
 Description=Config.json watcher service
-Wants=prepare-openvpn.service resin-ntp-config.service
+Wants=prepare-openvpn.service resin-ntp-config.service development-features.service
 
 [Service]
 Type=oneshot

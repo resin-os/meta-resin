@@ -1,0 +1,14 @@
+[Unit]
+Description=Runtime development features management
+DefaultDependencies=no
+Requires=var-volatile.mount
+After=var-volatile.mount
+Before=umount.target
+Conflicts=umount.target
+
+[Service]
+Type=oneshot
+ExecStart=@BASE_BINDIR@/sh @BINDIR@/development-features
+
+[Install]
+WantedBy=multi-user.target
