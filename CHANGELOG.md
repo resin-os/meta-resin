@@ -1,6 +1,15 @@
 Change log
 -----------
 
+# v2.81.1
+## (2021-07-09)
+
+* resindataexpander: expand data part to max usable size on MBR [Joseph Kogut]
+* resindataexpander: reformat spaces -> tabs [Joseph Kogut]
+* resindataexpander: fix SC2069 on line 37 [Joseph Kogut]
+* resindataexpander: fix SC2086 on line 37 [Joseph Kogut]
+* resindataexpander: fix SC2046 on line 6 [Joseph Kogut]
+
 # v2.81.0
 ## (2021-07-06)
 
