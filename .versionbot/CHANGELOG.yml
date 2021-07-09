@@ -1,4 +1,28 @@
 - commits:
+    - subject: 'balena-os: pin linux-firmware to 20210511 from hardknott'
+      hash: 80b7639225389c0ed9e00d991089dce4c09046dc
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+    - subject: 'linux-firmware: upgrade 20190815 -> 20210511'
+      hash: 375b420d2c84ccdeaa7eca6918c50a766535b339
+      body: |
+        Add recipe from poky hardknott, revision 74dbb08
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Joseph Kogut <joseph@balena.io>
+        signed-off-by: Joseph Kogut <joseph@balena.io>
+      author: Joseph Kogut
+      nested: []
+  version: 2.81.1
+  date: 2021-07-09T02:15:46.642Z
+- commits:
     - subject: 'recipes-core: add a ''network connectivity wait'' service'
       hash: a6781d54c6edced457ad916cac3fec9c70d25a0a
       body: |
