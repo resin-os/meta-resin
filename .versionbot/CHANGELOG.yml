@@ -1,4 +1,15 @@
 - commits:
+    - subject: 'patch: Make OS test suite compatible with current helpers'
+      hash: 1305e6c56ff331c8cbd4cd48d1ba8fc4e83f7df6
+      body: ''
+      footer:
+        Signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+        signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+      author: Vipul Gupta (@vipulgupta2048)
+      nested: []
+  version: 2.82.1
+  date: 2021-07-10T13:25:41.322Z
+- commits:
     - subject: 'networkmanager: Rename references to resin'
       hash: c857ecc07325e643c39d30f68621c2807664e36e
       body: ''
