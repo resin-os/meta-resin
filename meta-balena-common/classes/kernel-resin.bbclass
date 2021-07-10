@@ -102,6 +102,7 @@ BALENA_CONFIGS ?= " \
     task-accounting \
     ipv6_mroute \
     disable_hung_panic \
+    mdraid \
     "
 
 #
@@ -567,6 +568,14 @@ BALENA_CONFIGS[uprobes] = " \
 BALENA_CONFIGS[disable_hung_panic] = " \
     CONFIG_BOOTPARAM_HUNG_TASK_PANIC=n \
     "
+
+# enable rootfs on RAID1
+BALENA_CONFIGS[mdraid] = " \
+    CONFIG_MD=y \
+    CONFIG_BLK_DEV_MD=y \
+    CONFIG_MD_RAID1=y \
+    CONFIG_MD_AUTODETECT=y \
+"
 
 ###########
 # HELPERS #
