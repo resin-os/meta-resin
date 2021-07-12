@@ -1,4 +1,20 @@
 - commits:
+    - subject: Add support for rootfs on MD RAID1
+      hash: 0b0a5f30c587f01d35c50790eda9557311bab842
+      body: |
+        This commit does two things:
+        - Build in necessary kernel modules
+        - Add the mdadm userspace utility to rootfs and initrd
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Michal Toman <michalt@balena.io>
+        signed-off-by: Michal Toman <michalt@balena.io>
+      author: Michal Toman
+      nested: []
+  version: 2.83.0
+  date: 2021-07-12T14:21:11.224Z
+- commits:
     - subject: 'networkmanager: Rename references to resin'
       hash: c857ecc07325e643c39d30f68621c2807664e36e
       body: ''
