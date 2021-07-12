@@ -1,4 +1,27 @@
 - commits:
+    - subject: 'tests: Add hup test suite'
+      hash: 55829072c92bd89f89c41dcad876ac03e8f887c7
+      body: |
+        Add smoke test
+
+        Resolve `latest` to dev variant
+
+        If we want the serial logs of the DUT the image that is flashed needs to
+        be the development variant. The `latest` shortcut however always
+        resolves to the production image. We manually resolve the version to fix
+        this.
+
+        Change image name for consistent docker image pulls
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+        signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+      author: Robert Günzler
+      nested: []
+  version: 2.82.1
+  date: 2021-07-12T12:37:22.698Z
+- commits:
     - subject: 'networkmanager: Rename references to resin'
       hash: c857ecc07325e643c39d30f68621c2807664e36e
       body: ''
