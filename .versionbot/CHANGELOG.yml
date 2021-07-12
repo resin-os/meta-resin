@@ -1,4 +1,195 @@
 - commits:
+    - subject: Replace image variants with development mode
+      hash: e46b486c25b61decf65c3e598f6863da38f32a4a
+      body: |
+        The dual image variants are replaced with a runtime configuration switch
+        for development mode.
+
+        Fixes #2226
+        Relates to: balena-io/balena-io#2247
+      footer:
+        Change-type: minor
+        change-type: minor
+        Changelog-entry: Replace image variants with development mode
+        changelog-entry: Replace image variants with development mode
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'u-boot: Introduce a compile time osdev-image feature'
+      hash: 5c4bccfa1ddd813351f90659870c635e4ce1d817
+      body: |
+        At runtime we can now enable development features that were previously
+        configured using the development-image feature. That feature also
+        configured U-Boot for OS development.
+
+        Now we have two distinct functionalities:
+
+        * A runtime development configuration variable that configures the
+        device to facilitate application development
+        * A build time osdev-image feature that configures the OS for BSP and OS
+        development
+
+        This allows us to merge the current production/development images into
+        a single image.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'os-release: Remove image variants information'
+      hash: 3678007f5b21333eb67810399ab7c4bcfd615bf9
+      body: |
+        There are no more image variants.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Replace DEVELOPMENT_IMAGE and image variants with OS_DEVELOPMENT
+      hash: 1fceb6fd7133b1f749552133d6f9afeb2a21b30f
+      body: >
+        The images now can be configured for application development mode at
+        runtime.
+
+        This commit introduces a built time option to configure them for BSP or
+
+        other OS development like board bringup.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'images: Remove debug-tweaks settings.'
+      hash: 946d81fe953cfd8ce12ac7d4e1737ff13c40208d
+      body: |
+        The ssh development configurations are now applied at runtime. The only
+        feature that has been left out is the postinst logging. Customers that
+        need to develop the OS can configure this themselves.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'openssh: Enable runtime development configuration'
+      hash: 0426e466919b28cda3fefc16ec1b388316a4d075
+      body: |
+        When a device is configured in development mode, allow password
+        authentication and empty passwords, as well as root logins.
+
+        In production mode, disable password authentication to allow only
+        SSH access.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'balena-info: Rename from resin-info'
+      hash: eae88c474ff2b6ce12b4d6039cbab6561043b930
+      body: |
+        Replace references to resin for balena.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'balena: Enable debugging socket on development mode'
+      hash: 7cf3d7effe70ae1334626107ee0fd851613c3181
+      body: |
+        When configured in development mode enable the debug socket.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'image-balena: Allow passwordless root logins'
+      hash: b8f1af191dd62ecc99a5c832a1803175a29b7ae7
+      body: >
+        Even without debug-tweaks, allow passwordless root logins. For
+        production
+
+        builds there is no console available so this setting does not change
+        current
+
+        functionality.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'image_balena: Remove "balena" hostname from development images'
+      hash: c1ba09811e6b6cb80aaf06763c1231164e56061b
+      body: |
+        There is no reason not to have development images use the uuid as
+        hostname in the same way production images do.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'systemd: Runtime enablement of serial console'
+      hash: b526a82dc59494d5e52da2d95ba80232d8b80367
+      body: |
+        Adapt the systemd getty services to enable for images configured for
+        development.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: 'config-json: Run development-features on config.json change'
+      hash: 19782dc2eda53bbacbb995f7adf4aa9819d62f29
+      body: >
+        This will automatically configure the system for production or
+        development
+
+        mode when configured for it.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: >-
+        development-features: Add service for development features runtime
+        management
+      hash: 1adb113af27a0d1a0408d29309c8022087f3ff5c
+      body: >
+        This service will adjust the filesystem with development features based
+        on
+
+        the `development` flag on `config.json`.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.83.0
+  date: 2021-07-12T10:31:31.642Z
+- commits:
     - subject: 'networkmanager: Rename references to resin'
       hash: c857ecc07325e643c39d30f68621c2807664e36e
       body: ''

@@ -1,6 +1,23 @@
 Change log
 -----------
 
+# v2.83.0
+## (2021-07-12)
+
+* Replace image variants with development mode [Alex Gonzalez]
+* u-boot: Introduce a compile time osdev-image feature [Alex Gonzalez]
+* os-release: Remove image variants information [Alex Gonzalez]
+* Replace DEVELOPMENT_IMAGE and image variants with OS_DEVELOPMENT [Alex Gonzalez]
+* images: Remove debug-tweaks settings. [Alex Gonzalez]
+* openssh: Enable runtime development configuration [Alex Gonzalez]
+* balena-info: Rename from resin-info [Alex Gonzalez]
+* balena: Enable debugging socket on development mode [Alex Gonzalez]
+* image-balena: Allow passwordless root logins [Alex Gonzalez]
+* image_balena: Remove "balena" hostname from development images [Alex Gonzalez]
+* systemd: Runtime enablement of serial console [Alex Gonzalez]
+* config-json: Run development-features on config.json change [Alex Gonzalez]
+* development-features: Add service for development features runtime management [Alex Gonzalez]
+
 # v2.82.0
 ## (2021-07-10)
 
