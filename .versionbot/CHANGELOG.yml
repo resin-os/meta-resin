@@ -1,4 +1,21 @@
 - commits:
+    - subject: 'kernel-resin: Configure DEBUG_FS'
+      hash: 65112378a405fb8837e1df4cbea8b4b20988936b
+      body: |
+        The debugging filesystem is usually mounted on user images and it is
+        enabled by default on most Linux distributions.
+
+        Fixes balena-os/balena-allwinner#128
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 2.82.2
+  date: 2021-07-12T17:58:32.799Z
+- commits:
     - subject: 'balena-hostname: add comments and improve logging'
       hash: a7a2bb057e22e2ac4fc4cafaf6ba3b533ca5f464
       body: |

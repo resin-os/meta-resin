@@ -1,6 +1,11 @@
 Change log
 -----------
 
+# v2.82.2
+## (2021-07-12)
+
+* kernel-resin: Configure DEBUG_FS [Alex Gonzalez]
+
 # v2.82.1
 ## (2021-07-12)
 
