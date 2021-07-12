@@ -1,6 +1,11 @@
 Change log
 -----------
 
+# v2.82.1
+## (2021-07-12)
+
+* make container healthcheck test more consistant [rcooke-warwick]
+
 # v2.82.0
 ## (2021-07-10)
 
