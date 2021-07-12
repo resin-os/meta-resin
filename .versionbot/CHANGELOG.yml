@@ -1,4 +1,17 @@
 - commits:
+    - subject: make container healthcheck test more consistant
+      hash: 1a6816151585adf15237f83416a174512ed9bb63
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Ryan Cooke <ryan@balena.io>
+        signed-off-by: Ryan Cooke <ryan@balena.io>
+      author: rcooke-warwick
+      nested: []
+  version: 2.82.1
+  date: 2021-07-12T12:38:27.936Z
+- commits:
     - subject: 'networkmanager: Rename references to resin'
       hash: c857ecc07325e643c39d30f68621c2807664e36e
       body: ''
