@@ -15,8 +15,6 @@
 
 "use strict";
 
-const { delay } = require("bluebird");
-
 module.exports = {
   title: "Container healthcheck test",
   os: {
@@ -30,7 +28,6 @@ module.exports = {
     },
   },
   run: async function (test) {
-    await delay(1000 * 60);
     const ip = await this.context.get().worker.ip(this.context.get().link);
 
     const state = await this.context
