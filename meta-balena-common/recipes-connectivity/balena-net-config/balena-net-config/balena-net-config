@@ -28,7 +28,7 @@ if [ -d "$CONFIG_NM" ]; then
 fi
 
 # set the wifi regulatory domain; keep the devices default if unset
-if [ ! -z "$COUNTRY" ]; then
+if [ -n "$COUNTRY" ]; then
 	iw reg set "$COUNTRY"
 fi
 
