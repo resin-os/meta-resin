@@ -59,10 +59,6 @@ init_config_json() {
 
    # Set deviceType for supervisor
    echo "$(cat ${1}/config.json | jq -S ".deviceType=$slug")" > ${1}/config.json
-
-   if ${@bb.utils.contains('DISTRO_FEATURES','development-image','true','false',d)}; then
-       echo "$(cat ${1}/config.json | jq -S ".hostname=\"balena\"")" > ${1}/config.json
-   fi
 }
 
 #
@@ -365,6 +361,7 @@ python os_release_extra_data() {
         f.writelines(extra_data)
 }
 
+ROOTFS_POSTPROCESS_COMMAND_remove = "zap_empty_root_password"
 ROOTFS_POSTPROCESS_COMMAND += " \
     generate_compressed_kernel_module_deps ; \
     add_image_flag_file ; \

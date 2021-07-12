@@ -34,17 +34,6 @@ Before bitbake-ing with meta-balena support, a few flags can be changed in the c
 Editing of local.conf is to be done after source-ing.
 See below for explanation on such build flags.
 
-### Development Images
-
-The DEVELOPMENT_IMAGE variable gets injected into DISTRO_FEATURES. If DEVELOPMENT_IMAGE = "1" then 'development-image' distro feature is added.
-Based on this, recipes can decide what development specific changes are needed. By default DEVELOPMENT_IMAGE = "0" which corresponds to a normal (non-development) build (development-image won't be appended to DISTRO_FEATURE).
-If user wants a build which creates development images (to use the serial console for example), DEVELOPMENT_IMAGE = "1" needs to be added to local.conf.
-
-To make it short:
-
-* If DEVELOPMENT_IMAGE is not present in your local.conf or it is not "1" : Non-development images will be generated (default behavior)
-* If DEVELOPMENT_IMAGE is defined local.conf and its value is "1" : Development images will be generated
-
 ### Generation of host OS update bundles
 
 In order to generate update balena host OS bundles, edit the build's local.conf adding:
@@ -169,6 +158,25 @@ The behavior of balenaOS can be configured by setting the following keys in the 
 ### os
 
 An object containing settings that customize the host OS at runtime.
+
+#### development mode
+
+To enable development mode:
+
+```json
+"os": {
+  "development": {
+    "enable" : true
+  }
+}
+```
+
+By default development mode enables passwordless logins. If custom SSH keys
+are present, passwordless login will no longer be allowed and SSH key access is
+enforced.
+
+```
+
 
 #### network
 

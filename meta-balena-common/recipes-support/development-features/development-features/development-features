@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+
+. /usr/libexec/os-helpers-logging
+
+DEVELOPMENT_FEATURES_FLAG_FILE="/var/volatile/development-features"
+
+. /usr/sbin/balena-config-vars
+
+if [ -f "${CONFIG_PATH}" ]; then
+	development_mode="$(jq -r ".os.development.enable" "${CONFIG_PATH}")"
+	if [ "${development_mode}" = "true" ]; then
+		authenticated_ssh="$(jq -r ".os.sshKeys" "${CONFIG_PATH}")"
+	fi
+fi
+
+if [ "${development_mode}" = "true" ]; then
+	if [ -n "${authenticated_ssh}" ]; then
+		info "[INFO] Disabling SSH passwordless login on development mode"
+		echo "SSHD_OPTS='-f /etc/ssh/sshd_config_development -o PasswordAuthentication=no'" > "${DEVELOPMENT_FEATURES_FLAG_FILE}"
+	else
+		echo "SSHD_OPTS='-f /etc/ssh/sshd_config_development'" > "${DEVELOPMENT_FEATURES_FLAG_FILE}"
+	fi
+	echo 'BALENA_DEVELOPMENT_ARGS="-H tcp://0.0.0.0:2375"' >> "${DEVELOPMENT_FEATURES_FLAG_FILE}"
+	info "[INFO] Entering development mode"
+	/bin/systemctl restart development-features.target
+else
+	if [ -f "${DEVELOPMENT_FEATURES_FLAG_FILE}" ]; then
+		rm -rf "${DEVELOPMENT_FEATURES_FLAG_FILE}"
+		info "[INFO] Entering production mode"
+		/bin/systemctl restart development-features.target
+	fi
+fi
