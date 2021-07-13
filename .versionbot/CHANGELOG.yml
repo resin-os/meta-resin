@@ -1,4 +1,40 @@
 - commits:
+    - subject: 'tests/hup: add more tests'
+      hash: c194c6d055fb1fc8238a6a1b1ecc598c8c9389c3
+      body: |
+        * [x] rollback-althboot check
+        * [x] rollback-health check
+        * [ ] self-serve os update check
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Robert Günzler <robertg@balena.io>
+        signed-off-by: Robert Günzler <robertg@balena.io>
+      author: Robert Günzler
+      nested: []
+    - subject: 'tests: Add hup test suite'
+      hash: d3be1323a92562dc7e0339f55a2eb7e94bfe739c
+      body: |
+        Add smoke test
+
+        Resolve `latest` to dev variant
+
+        If we want the serial logs of the DUT the image that is flashed needs to
+        be the development variant. The `latest` shortcut however always
+        resolves to the production image. We manually resolve the version to fix
+        this.
+
+        Change image name for consistent docker image pulls
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+        signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+      author: Robert Günzler
+      nested: []
+  version: 2.80.13
+  date: 2021-07-13T19:04:57.174Z
+- commits:
     - subject: Remove CODEOWNERS
       hash: da8bfafc94a3815ad62658846d46ec0b4a3edb9b
       body: ''
