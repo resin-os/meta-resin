@@ -18,7 +18,7 @@
 set -o errexit
 set -o pipefail
 
-[ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] && exit 1
+[ -z "$1" ] || [ -z "$2" ] && exit 1
 
 # shellcheck disable=SC1091
 . /usr/libexec/os-helpers-fs
@@ -27,23 +27,28 @@ part=$1
 label=$2
 parent=$3
 
+[ -z "${parent}" ] && [ "${part:0:8}" != "/dev/dm-" ] && exit 1
+
 # If the UUIDs have been regenerated in this boot, the root UUID is stored
 # on a temporary file, otherwise fetch from the kernel command line
-new_root="/tmp/initramfs/bootparam_root"
-if [ -f "${new_root}" ]; then
-	ruuid=$(cat "${new_root}" | cut -c6-)
+new_root_tmp="/tmp/initramfs/bootparam_root"
+new_root_run="/run/initramfs/bootparam_root"
+if [ -f "${new_root_tmp}" ]; then
+	ruuid=$(cat "${new_root_tmp}" | cut -c6-)
+elif [ -f "${new_root_run}" ]; then
+	ruuid=$(cat "${new_root_run}" | cut -c6-)
 else
 	ruuid=$(get_cmdline_root_uuid)
 fi
 # Determine if the partition is on the same drive as root
 rpdev=$(lsblk -nlo pkname,uuid | grep "${ruuid}" | cut -d " " -f1) || true
-if [ "${rpdev}" = "${parent}" ]; then
+if [ "${rpdev}" = "${parent}" ] || [ "${part:0:8}" = "/dev/dm-" ]; then
 	echo "BALENA_FS_USE=${label}"
 	# Determine if its the active or inactive partition. The active one's
 	# UUID is passed by the bootloader in the kernel command line
 	case $label in
 		resin-root*)
-			rdev=$(lsblk -nlo name,uuid | grep "${ruuid}" | cut -d " " -f1)
+			rdev=$(lsblk -nlo kname,uuid | grep "${ruuid}" | cut -d " " -f1)
 			if [ "/dev/${rdev}" == "${part}" ]; then
 				echo "BALENA_UPDATE_STATE=active"
 			else
