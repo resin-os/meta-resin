@@ -94,13 +94,10 @@ module.exports = {
 
     // Register a teardown function execute at the end of the test, regardless of a pass or fail
     this.suite.teardown.register(() => {
-      this.log("Removing image");
-      if (fse.existsSync("/data/image")) {
-        fse.unlinkSync("/data/image"); // Delete the unpacked an modified image from the testbot cache to prevent use in the next suite
-      }
       this.log("Worker teardown");
       return this.context.get().worker.teardown();
     });
+
     this.log("Setting up worker");
 
 
@@ -115,11 +112,7 @@ module.exports = {
       .worker.network(this.suite.options.balenaOS.network);
 
     // Unpack OS image .gz
-    await this.context.get().os.fetch({
-      type: this.suite.options.balenaOS.download.type,
-      version: this.suite.options.balenaOS.download.version,
-      releaseInfo: this.suite.options.balenaOS.releaseInfo,
-    });
+    await this.context.get().os.fetch();
 
     // Configure OS image
     await this.context.get().os.configure();

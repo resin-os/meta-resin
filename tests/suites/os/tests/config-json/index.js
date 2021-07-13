@@ -14,35 +14,6 @@
 
 "use strict";
 
-const rebootDevice = async (that, test) => {
-  await that.context
-    .get()
-    .worker.executeCommandInHostOS(
-      "touch /tmp/reboot-check",
-      that.context.get().link
-    );
-
-  test.comment("Starting reboot...");
-  await that.context
-    .get()
-    .worker.executeCommandInHostOS(
-      "systemd-run --on-active=2 /sbin/reboot",
-      that.context.get().link
-    );
-
-  await that.context.get().utils.waitUntil(async () => {
-    test.comment("Waiting for DUT to come back online...");
-    let res = await that.context
-      .get()
-      .worker.executeCommandInHostOS(
-        '[[ ! -f /tmp/reboot-check ]] && echo "pass"',
-        that.context.get().link
-      );
-
-    return res === "pass";
-  }, false);
-};
-
 module.exports = {
   title: "Config.json configuration tests",
   tests: [
@@ -73,6 +44,7 @@ module.exports = {
             "systemd-run --on-active=2 /sbin/reboot",
             this.context.get().link
           );
+        // Testbot looks for DUT with an updated hostname
         await this.context.get().utils.waitUntil(async () => {
           test.comment("Waiting to come back online...");
           return (
@@ -130,7 +102,6 @@ module.exports = {
         }, false);
       },
     },
-
     {
       title: "ntpServer test",
       run: async function (test) {
@@ -145,7 +116,8 @@ module.exports = {
             this.context.get().link
           );
 
-        await rebootDevice(this, test);
+        // Rebooting the DUT
+        await this.context.get().worker.rebootDut(this.context.get().link)
 
         await test.resolves(
           this.context
@@ -196,7 +168,8 @@ module.exports = {
             this.context.get().link
           );
 
-        await rebootDevice(this, test);
+        // Rebooting the DUT
+        await this.context.get().worker.rebootDut(this.context.get().link)
 
         test.is(
           (
@@ -246,7 +219,8 @@ module.exports = {
             this.context.get().link
           );
 
-        await rebootDevice(this, test);
+        // Rebooting the DUT
+        await this.context.get().worker.rebootDut(this.context.get().link)
 
         const config = await this.context
           .get()
@@ -279,7 +253,8 @@ module.exports = {
             this.context.get().link
           );
 
-        await rebootDevice(this, test);
+        // Rebooting the DUT
+        await this.context.get().worker.rebootDut(this.context.get().link)
 
         const config = await this.context
           .get()
@@ -318,7 +293,8 @@ module.exports = {
             this.context.get().link
           );
 
-        await rebootDevice(this, test);
+        // Rebooting the DUT
+        await this.context.get().worker.rebootDut(this.context.get().link)
 
         test.is(
           await this.context
@@ -371,10 +347,10 @@ module.exports = {
         );
 
         test.comment("Attempting first reboot");
-        await rebootDevice(this, test);
+        await this.context.get().worker.rebootDut(this.context.get().link)
 
         test.comment("Attempting second reboot");
-        await rebootDevice(this, test);
+        await this.context.get().worker.rebootDut(this.context.get().link)
 
         const testcount = parseInt(
           await this.context
