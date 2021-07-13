@@ -1,6 +1,13 @@
 Change log
 -----------
 
+# v2.82.4
+## (2021-07-13)
+
+* dnsmasq: Restart when dnsServers have been updated [Kyle Harding]
+* balena-config-vars: Don't propagate null dns servers [Kyle Harding]
+* balena-net-config: Restart service when config.json changes [Kyle Harding]
+
 # v2.82.3
 ## (2021-07-13)
 

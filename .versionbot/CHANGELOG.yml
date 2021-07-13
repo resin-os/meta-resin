@@ -1,4 +1,58 @@
 - commits:
+    - subject: 'dnsmasq: Restart when dnsServers have been updated'
+      hash: 13c75f8ecad227b1942cf9447bdbacdbda3977bd
+      body: |
+        Since dnsmasq reads custom servers from /run/dnsmasq.servers
+        and balena-net-config will keep that file up-to-date we can
+        reliably restart dnsmasq only when the servers file has changed.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+    - subject: 'balena-config-vars: Don''t propagate null dns servers'
+      hash: 69420be74b882e14e3aa070061f912119a3a4613
+      body: |
+        If "servers=null" is written to /run/dnsmasq.servers by
+        balena-net-config then dnsmasq will report the following error:
+
+        dnsmasq[4483]: bad address at line 2 of /run/dnsmasq.servers
+
+        Replacing null with an empty string was in previous versions
+        of resin-vars and was likely removed by mistake.
+
+        dnsServers="null" is a valid setting in config.json to remove our
+        default 8.8.8.8 values as per the documentation.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+    - subject: 'balena-net-config: Restart service when config.json changes'
+      hash: 4bdfe67cc5af010c1fb5b7820d22c27eb5c46986
+      body: |
+        This will trigger an update to /run/dnsmasq.servers when config.json
+        changes for any reason, but importantly when DNS servers are added.
+
+        This change also means that balena-net-config no longer remains after
+        exit and some services that Want or Require it could trigger multiple
+        executions on each boot or config.json change. This should be safe.
+
+        Note that this change alone will not trigger a restart of dnsmasq.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 2.82.4
+  date: 2021-07-13T18:21:51.778Z
+- commits:
     - subject: Check that the hostapp image fits the inactive partion on HUP
       hash: a0803fcfff0e908f4ed358d0568c4872bbcecade
       body: >
