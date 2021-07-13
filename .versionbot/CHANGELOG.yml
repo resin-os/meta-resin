@@ -1,225 +1,39 @@
 - commits:
-    - subject: Check that the hostapp image fits the inactive partion on HUP
-      hash: a0803fcfff0e908f4ed358d0568c4872bbcecade
-      body: >
-        Currently it is possible to build a docker image that will then fail to
-
-        hup due to a lack of space on the inactive partition.
-
-
-        Add a task to check the docker image space against the available space
-        on
-
-        the root filesystem partition and fail the build if it's too big.
-      footer:
-        Change-type: patch
-        change-type: patch
-        Changelog-entry: Check that the hostapp image fits the inactive partion on HUP
-        changelog-entry: Check that the hostapp image fits the inactive partion on HUP
-        Signed-off-by: Alex Gonzalez <alexg@balena.io>
-        signed-off-by: Alex Gonzalez <alexg@balena.io>
-      author: Alex Gonzalez
-      nested: []
-    - subject: 'image-balena: Add check for docker image size'
-      hash: 9a75a872dfcf0c3d71d4d5584241b65d07bd7103
-      body: >
-        Currently it is possible to build a docker image that will then fail to
-
-        hup due to a lack of space on the inactive partition.
-
-
-        Add a task to check the docker image space against the available space
-        on
-
-        the root filesystem partition and fail the build if it's too big.
-      footer:
-        Change-type: patch
-        change-type: patch
-        Signed-off-by: Alex Gonzalez <alexg@balena.io>
-        signed-off-by: Alex Gonzalez <alexg@balena.io>
-      author: Alex Gonzalez
-      nested: []
-    - subject: 'balena-image: Break down the rootfs image size calculation'
-      hash: 8a2b704bd5103ba6419328d0f9cc3d6b667ab5f5
+    - subject: 'tests/hup: add more tests'
+      hash: c194c6d055fb1fc8238a6a1b1ecc598c8c9389c3
       body: |
-        Replace the IMAGE_ROOTFS_SIZE magic number with a calculation based on
-        the partition sizes on the balena image classes.
-
-        The rootfs size is calculated with the assumption of a total BalenaOS
-        size of 700M. This includes boot, state, rootA and rootB partitions. The
-        data partition will then grow to occupy the rest of the storage media.
-
-        Device integration layers can override this value if needed.
+        * [x] rollback-althboot check
+        * [x] rollback-health check
+        * [ ] self-serve os update check
       footer:
         Change-type: patch
         change-type: patch
-        Signed-off-by: Alex Gonzalez <alexg@balena.io>
-        signed-off-by: Alex Gonzalez <alexg@balena.io>
-      author: Alex Gonzalez
+        Signed-off-by: Robert Günzler <robertg@balena.io>
+        signed-off-by: Robert Günzler <robertg@balena.io>
+      author: Robert Günzler
       nested: []
-    - subject: 'image_types_balena: Add rootfs size calculation function'
-      hash: a4ede069d1ab7cbd2b6830574eb891f8c76a92a9
-      body: >
-        Instead of hardcoding the requested root filesystem value, let's explain
-
-        how the calculation is made with a python function that will adjust
-        based
-
-        on the sizes of other partitions.
-      footer:
-        Change-type: patch
-        change-type: patch
-        Signed-off-by: Alex Gonzalez <alexg@balena.io>
-        signed-off-by: Alex Gonzalez <alexg@balena.io>
-      author: Alex Gonzalez
-      nested: []
-  version: 2.82.3
-  date: 2021-07-13T11:18:32.393Z
-- commits:
-    - subject: Update balena-supervisor from v12.8.8 to v12.9.3
-      hash: 7903a929e48af889b8df14754d84a8e6b0655752
-      body: ''
-      footer:
-        Change-type: patch
-        change-type: patch
-        Changelog-entry: Update balena-supervisor from v12.8.8 to v12.9.3
-        changelog-entry: Update balena-supervisor from v12.8.8 to v12.9.3
-        Signed-off-by: Miguel Casqueira <miguel@balena.io>
-        signed-off-by: Miguel Casqueira <miguel@balena.io>
-      author: Miguel Casqueira
-      nested: []
-  version: 2.82.2
-  date: 2021-07-13T01:37:11.482Z
-- commits:
-    - subject: 'balena-hostname: add comments and improve logging'
-      hash: a7a2bb057e22e2ac4fc4cafaf6ba3b533ca5f464
+    - subject: 'tests: Add hup test suite'
+      hash: d3be1323a92562dc7e0339f55a2eb7e94bfe739c
       body: |
-        Add some comments and improve the logging.
+        Add smoke test
+
+        Resolve `latest` to dev variant
+
+        If we want the serial logs of the DUT the image that is flashed needs to
+        be the development variant. The `latest` shortcut however always
+        resolves to the production image. We manually resolve the version to fix
+        this.
+
+        Change image name for consistent docker image pulls
       footer:
         Change-type: patch
         change-type: patch
-        Changelog-entry: 'balena-hostname: add comments and improve logging'
-        changelog-entry: 'balena-hostname: add comments and improve logging'
-        Signed-off-by: Mark Corbin <mark@balena.io>
-        signed-off-by: Mark Corbin <mark@balena.io>
-      author: Mark Corbin
+        Signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+        signed-off-by: Vipul Gupta (@vipulgupta2048) <vipul@balena.io>
+      author: Robert Günzler
       nested: []
-    - subject: 'meta-balena: rename resin-hostname to balena-hostname'
-      hash: 55baa1687ca3c576077b26a31591304911be2581
-      body: |
-        Rename 'resin-hostname' to 'balena-hostname' and update all
-        references.
-      footer:
-        Change-type: patch
-        change-type: patch
-        Changelog-entry: 'meta-balena: rename resin-hostname to balena-hostname'
-        changelog-entry: 'meta-balena: rename resin-hostname to balena-hostname'
-        Signed-off-by: Mark Corbin <mark@balena.io>
-        signed-off-by: Mark Corbin <mark@balena.io>
-      author: Mark Corbin
-      nested: []
-  version: 2.82.1
-  date: 2021-07-12T13:01:41.540Z
-- commits:
-    - subject: 'networkmanager: Rename references to resin'
-      hash: c857ecc07325e643c39d30f68621c2807664e36e
-      body: ''
-      footer:
-        Change-type: patch
-        change-type: patch
-        Signed-off-by: Kyle Harding <kyle@balena.io>
-        signed-off-by: Kyle Harding <kyle@balena.io>
-      author: Kyle Harding
-      nested: []
-    - subject: 'resin-proxy-config: Rename to balena-proxy-config'
-      hash: 9e40219affeae1e5f7d888439654f9e40cef5fc0
-      body: ''
-      footer:
-        Change-type: minor
-        change-type: minor
-        Signed-off-by: Kyle Harding <kyle@balena.io>
-        signed-off-by: Kyle Harding <kyle@balena.io>
-      author: Kyle Harding
-      nested: []
-    - subject: 'resin-ntp-config: Rename to balena-ntp-config'
-      hash: e534f24dbce8d883c867d52538ab721c423566a2
-      body: ''
-      footer:
-        Change-type: minor
-        change-type: minor
-        Signed-off-by: Kyle Harding <kyle@balena.io>
-        signed-off-by: Kyle Harding <kyle@balena.io>
-      author: Kyle Harding
-      nested: []
-    - subject: 'resin-net-config: Rename to balena-net-config'
-      hash: a3726f421840e0facc21dde81b00a5e0d70e49ba
-      body: ''
-      footer:
-        Change-type: minor
-        change-type: minor
-        Signed-off-by: Kyle Harding <kyle@balena.io>
-        signed-off-by: Kyle Harding <kyle@balena.io>
-      author: Kyle Harding
-      nested: []
-  version: 2.82.0
-  date: 2021-07-10T11:13:11.567Z
-- commits:
-    - subject: 'balena-engine: Restore previous systemd service settings'
-      hash: 0b7dac9461193e6c1afbc046337aeb74ca20e84c
-      body: |
-        - remove exec-root path from balena engine
-        - restore unique fixed-cidr for balena-host engine
-        - remove duplicate fixed-cidr flags from both
-        - remove experimental from balena-host
-        - fix healthdog command substitution
-
-        These were changed by mistake in the previous refactor.
-      footer:
-        Change-type: patch
-        change-type: patch
-        Signed-off-by: Kyle Harding <kyle@balena.io>
-        signed-off-by: Kyle Harding <kyle@balena.io>
-      author: Kyle Harding
-      nested: []
-  version: 2.81.1
-  date: 2021-07-09T23:25:52.084Z
-- commits:
-    - subject: 'recipes-core: add a ''network connectivity wait'' service'
-      hash: a6781d54c6edced457ad916cac3fec9c70d25a0a
-      body: |
-        Add a new systemd service to check for full network connectivity.
-        This service is required because the default NetworkManager (NM)
-        connectivity checker doesn't differentiate between the
-        CONNECTED_LOCAL, CONNECTED_SITE and CONNECTED_GLOBAL states. This
-        service checks for the CONNECTED_GLOBAL state only and can be used
-        to delay the start of other services which require full network
-        access to be available. This can help to avoid startup problems on
-        networks with slow DNS access or that utilise a captive portal.
-
-        The script does an initial oneshot check of the NM state to make sure
-        that we don't wait for an event that doesn't come. This check is
-        redundant at boot time due to the fact that the service is started
-        before NM to ensure that no NM DBus events are missed. The initial
-        check is useful in circumstances where you want to run the script
-        standalone or post-boot.
-
-        Other services that wish to make use of this service and wait for
-        full network connectivity should add the following entries to their
-        systemd unit definition:
-
-        Requires=balena-net-connectivity-wait.target
-        After=balena-net-connectivity-wait.target
-      footer:
-        Change-type: minor
-        change-type: minor
-        Changelog-entry: 'recipes-core: add a ''network connectivity wait'' service'
-        changelog-entry: 'recipes-core: add a ''network connectivity wait'' service'
-        Signed-off-by: Mark Corbin <mark@balena.io>
-        signed-off-by: Mark Corbin <mark@balena.io>
-      author: Mark Corbin
-      nested: []
-  version: 2.81.0
-  date: 2021-07-06T09:28:12.840Z
+  version: 2.80.13
+  date: 2021-07-13T19:03:03.663Z
 - commits:
     - subject: Remove CODEOWNERS
       hash: da8bfafc94a3815ad62658846d46ec0b4a3edb9b

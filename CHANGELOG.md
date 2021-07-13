@@ -1,42 +1,11 @@
 Change log
 -----------
 
-# v2.82.3
+# v2.80.13
 ## (2021-07-13)
 
-* Check that the hostapp image fits the inactive partion on HUP [Alex Gonzalez]
-* image-balena: Add check for docker image size [Alex Gonzalez]
-* balena-image: Break down the rootfs image size calculation [Alex Gonzalez]
-* image_types_balena: Add rootfs size calculation function [Alex Gonzalez]
-
-# v2.82.2
-## (2021-07-13)
-
-* Update balena-supervisor from v12.8.8 to v12.9.3 [Miguel Casqueira]
-
-# v2.82.1
-## (2021-07-12)
-
-* balena-hostname: add comments and improve logging [Mark Corbin]
-* meta-balena: rename resin-hostname to balena-hostname [Mark Corbin]
-
-# v2.82.0
-## (2021-07-10)
-
-* networkmanager: Rename references to resin [Kyle Harding]
-* resin-proxy-config: Rename to balena-proxy-config [Kyle Harding]
-* resin-ntp-config: Rename to balena-ntp-config [Kyle Harding]
-* resin-net-config: Rename to balena-net-config [Kyle Harding]
-
-# v2.81.1
-## (2021-07-09)
-
-* balena-engine: Restore previous systemd service settings [Kyle Harding]
-
-# v2.81.0
-## (2021-07-06)
-
-* recipes-core: add a 'network connectivity wait' service [Mark Corbin]
+* tests/hup: add more tests [Robert Günzler]
+* tests: Add hup test suite [Robert Günzler]
 
 # v2.80.12
 ## (2021-07-05)
