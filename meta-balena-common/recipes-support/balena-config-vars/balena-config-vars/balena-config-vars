@@ -85,6 +85,11 @@ if [ -f $CONFIG_PATH ]; then
         eval "$CONFIG_PARAMS"
     fi
 
+    # Don't propagate the `null` value further to dnsmasq configuration
+    if [ "$DNS_SERVERS" = "null" ]; then
+        DNS_SERVERS=""
+    fi
+
     # Set additional default values.
     if [ -z "$OS_NET_CONN_URI" ]; then
         if [ -n "$API_ENDPOINT" ]; then
