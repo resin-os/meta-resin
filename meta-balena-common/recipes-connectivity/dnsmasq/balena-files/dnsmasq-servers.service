@@ -1,0 +1,8 @@
+[Unit]
+Description=dnsmasq.servers watcher service
+Wants=dnsmasq.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/echo 'dnsmasq.servers changed'
+ExecStart=/bin/systemctl restart dnsmasq.service
