@@ -1,7 +1,7 @@
 {
 	"scripts": {
-		"prettify": "prettier --config ../.prettierrc --write \"{os,release}/**/*.js\"",
-		"lint": "eslint -c ../.eslintrc.* lib tests"
+		"prettify": "prettier --config ./.prettierrc --write \"{os,hup}/**/*.js\"",
+		"lint": "eslint -c ./.eslintrc.* os hup"
 	},
 	"devDependencies": {
 		"eslint": "^4.19.1",
