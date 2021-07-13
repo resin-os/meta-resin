@@ -267,22 +267,6 @@ resin_root_quirks () {
     fi
 }
 
-resinhup_backwards_compatible_link () {
-    if [ -d "${IMGDEPLOYDIR}" ]; then
-        # Check if we are running on a poky version which deploys to IMGDEPLOYDIR instead
-        # of DEPLOY_DIR_IMAGE (poky morty introduced this change)
-        DEPLOY_IMAGE_TAR="${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.tar"
-        BALENA_HUP_BUNDLE="${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.resinhup-tar"
-    else
-        IMAGE_NAME_SUFFIX=".rootfs"
-        DEPLOY_IMAGE_TAR="${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.tar"
-        BALENA_HUP_BUNDLE="${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.resinhup-tar"
-    fi
-    if [ -f ${DEPLOY_IMAGE_TAR} ]; then
-        ln -fsv ${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.tar ${BALENA_HUP_BUNDLE}
-    fi
-}
-
 add_image_flag_file () {
     echo "DO NOT REMOVE THIS FILE" > ${DEPLOY_DIR_IMAGE}/${BALENA_FLAG_FILE}
 }
@@ -377,7 +361,6 @@ ROOTFS_POSTPROCESS_COMMAND += " \
 IMAGE_POSTPROCESS_COMMAND =+ " \
     deploy_image_license_manifest ; \
     fix_hddimg_symlink ; \
-    resinhup_backwards_compatible_link ; \
     "
 IMAGE_PREPROCESS_COMMAND += "remove_backup_files ; "
 

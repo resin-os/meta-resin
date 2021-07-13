@@ -45,12 +45,6 @@ To make it short:
 * If DEVELOPMENT_IMAGE is not present in your local.conf or it is not "1" : Non-development images will be generated (default behavior)
 * If DEVELOPMENT_IMAGE is defined local.conf and its value is "1" : Development images will be generated
 
-### Generation of host OS update bundles
-
-In order to generate update balena host OS bundles, edit the build's local.conf adding:
-
-RESINHUP = "yes"
-
 ### Configure custom network manager
 
 By default balena uses NetworkManager on host OS to provide connectivity. If you want to change and use other providers, list your packages using NETWORK_MANAGER_PACKAGES. You can add this variable to local.conf. Here is an example:
