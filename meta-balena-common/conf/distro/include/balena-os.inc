@@ -67,8 +67,8 @@ INITRAMFS_TASK = ""
 # resinOS defaults to ipk packages
 PACKAGE_CLASSES ?= "package_ipk"
 
-# Default the docker storage driver to aufs
-BALENA_STORAGE ?= "aufs"
+# Default the docker storage driver to overlay2
+BALENA_STORAGE ?= "overlay2"
 python () {
     docker_storage = d.getVar('DOCKER_STORAGE', True)
     if docker_storage:

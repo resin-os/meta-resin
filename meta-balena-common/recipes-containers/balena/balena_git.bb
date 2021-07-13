@@ -11,10 +11,10 @@ LIC_FILES_CHKSUM = "file://src/import/LICENSE;md5=4859e97a9c7780e77972d989f0823f
 
 inherit systemd go pkgconfig useradd
 
-BALENA_VERSION = "19.03.18"
+BALENA_VERSION = "19.03.21"
 BALENA_BRANCH= "master"
 
-SRCREV = "840aacc77b6c600b3b929fe9e4d9356a322b9e5b"
+SRCREV = "68bbf77c48dcbec1237fb5238806bf13a4ba8287"
 SRC_URI = "\
 	git://github.com/balena-os/balena-engine.git;branch=${BALENA_BRANCH};destsuffix=git/src/import \
 	file://balena.service \
@@ -23,6 +23,7 @@ SRC_URI = "\
 	file://balena-healthcheck \
 	file://var-lib-docker.mount \
 	file://balena.conf.systemd \
+	file://balena.conf.storagemigration \
 	file://balena-tmpfiles.conf \
 	file://0001-imporve-hardcoded-CC-on-cross-compile-docker-ce.patch \
 	"
@@ -150,8 +151,10 @@ do_install() {
 	mkdir -p ${D}/usr/lib/balena
 	install -m 0755 ${WORKDIR}/balena-healthcheck ${D}/usr/lib/balena/balena-healthcheck
 
+  install -d ${D}${sysconfdir}/systemd/system/balena.service.d
+  install -c -m 0644 ${WORKDIR}/balena.conf.storagemigration ${D}${sysconfdir}/systemd/system/balena.service.d/storagemigration.conf
+
 	if ${@bb.utils.contains('DISTRO_FEATURES','development-image','true','false',d)}; then
-		install -d ${D}${sysconfdir}/systemd/system/balena.service.d
 		install -c -m 0644 ${WORKDIR}/balena.conf.systemd ${D}${sysconfdir}/systemd/system/balena.service.d/balena.conf
 		sed -i "s/@BALENA_STORAGE@/${BALENA_STORAGE}/g" ${D}${sysconfdir}/systemd/system/balena.service.d/balena.conf
 	fi
