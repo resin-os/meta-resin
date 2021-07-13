@@ -1,0 +1,11 @@
+{
+    "modems" : [
+        "MS2131",
+        "V7R11"
+    ],
+    "network" : {
+        "apn" : "hologram",
+        "ipType" : "ipv4",
+        "testUrl" : "8.8.8.8"
+    }
+}
