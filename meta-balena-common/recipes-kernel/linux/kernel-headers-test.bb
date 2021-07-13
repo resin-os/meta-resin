@@ -9,6 +9,8 @@ SRC_URI = "file://example_module/hello.c \
            file://Dockerfile"
 
 inherit kernel-arch
+ENGINE_CLIENT ?= "docker"
+inherit ${@bb.utils.contains('BALENA_STORAGE','overlay2','balena-engine-rootless', '', d)}
 
 # Derived from kernel-arch.bbclass
 valid_debian_tuple = "i386 x86 arm aarch64"
@@ -36,11 +38,10 @@ do_compile() {
     cp ${DEPLOY_DIR_IMAGE}/kernel_modules_headers.tar.gz ${B}/work
     cp "${WORKDIR}"/Dockerfile ${B}/work/
     cp -r "${WORKDIR}"/example_module ${B}/work/
-
-    IMAGE_ID=$(DOCKER_API_VERSION=1.22 docker build --build-arg kernel_arch=${ARCH} --build-arg cross_compile_prefix=${DEBIAN_TUPLE} ${B}/work)
+    IMAGE_ID=$(DOCKER_API_VERSION=1.22 ${ENGINE_CLIENT} build --build-arg kernel_arch=${ARCH} --build-arg cross_compile_prefix=${DEBIAN_TUPLE} ${B}/work)
     # We don't pipe in previous line so that we can catch errors.
     IMAGE_ID=$(echo "$IMAGE_ID" | grep -o -E '[a-z0-9]{12}' | tail -n1)
-    DOCKER_API_VERSION=1.22 docker rmi "$IMAGE_ID"
+    DOCKER_API_VERSION=1.22 ${ENGINE_CLIENT} rmi "$IMAGE_ID"
 }
 
 # Explicitly depend on the do_deploy step as we use the deployed artefacts. DEPENDS doesn't cover that

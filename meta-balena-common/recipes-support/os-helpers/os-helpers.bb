@@ -16,6 +16,7 @@ S = "${WORKDIR}"
 inherit allarch
 
 PACKAGES = "${PN}-fs ${PN}-logging ${PN}-time"
+PACKAGES_class-native = "${PN}-engine"
 
 do_install() {
     install -d ${D}${libexecdir}
@@ -26,6 +27,16 @@ do_install() {
         ${D}${libexecdir}
 }
 
+do_install_class-native() {
+    install -d ${D}${libexecdir}
+    install -m 0775 \
+        "${TOPDIR}/../balena-yocto-scripts/automation/include/balena-docker.inc" \
+        ${D}${libexecdir}
+}
+
 FILES_${PN}-fs = "${libexecdir}/os-helpers-fs"
 FILES_${PN}-logging = "${libexecdir}/os-helpers-logging"
 FILES_${PN}-time = "${libexecdir}/os-helpers-time"
+FILES_${PN}-engine = "${libexecdir}/balena-docker.inc"
+
+BBCLASSEXTEND = "native"

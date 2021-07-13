@@ -11,8 +11,11 @@ S = "${WORKDIR}"
 B = "${S}/build"
 
 inherit deploy
+ENGINE_CLIENT ?= "docker"
+inherit ${@bb.utils.contains('BALENA_STORAGE','overlay2','balena-engine-rootless', '', d)}
 require docker-disk.inc
 require recipes-containers/balena-supervisor/balena-supervisor.inc
+CONTAINER_CGROUPS_PATH="${@bb.utils.contains('BALENA_STORAGE','overlay2','', '-v /sys/fs/cgroup:/sys/fs/cgroup:ro', d)}"
 
 # By default pull balena-supervisor
 TARGET_REPOSITORY ?= "${SUPERVISOR_REPOSITORY}"
@@ -50,20 +53,17 @@ do_compile () {
 		bbfatal "docker-disk: Can't compile as there is no internet connectivity on this host."
 	fi
 
-	# We force the PATH to be the standard linux path in order to use the host's
-	# docker daemon instead of the result of docker-native. This avoids version
-	# mismatches
-	DOCKER=$(PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" which docker)
-
 	# Generate the data filesystem
 	RANDOM=$$
+	CONTAINER_UID=${CONTAINER_UID:-$(id -u)}
+	CONTAINER_GID=${CONTAINER_GID:-$(id -u)}
 	_image_name="docker-disk-$RANDOM"
 	_container_name="docker-disk-$RANDOM"
-	$DOCKER rmi ${_image_name} > /dev/null 2>&1 || true
-	$DOCKER build -t ${_image_name} -f ${WORKDIR}/Dockerfile ${WORKDIR}
-	$DOCKER run --privileged --rm \
+	${ENGINE_CLIENT} rmi ${_image_name} > /dev/null 2>&1 || true
+	${ENGINE_CLIENT} build -t ${_image_name} -f ${WORKDIR}/Dockerfile ${WORKDIR}
+	${ENGINE_CLIENT} run --privileged --rm \
 		-e BALENA_STORAGE=${BALENA_STORAGE} \
-		-e USER_ID=$(id -u) -e USER_GID=$(id -u) \
+		-e USER_ID=${CONTAINER_UID} -e USER_GID=${CONTAINER_GID} \
 		-e TARGET_REPOSITORY="${TARGET_REPOSITORY}" \
 		-e TARGET_TAG="${TARGET_TAG}" \
 		-e HELLO_REPOSITORY="${HELLO_REPOSITORY}" \
@@ -74,9 +74,10 @@ do_compile () {
 		-e PRIVATE_REGISTRY_PASSWORD="${PRIVATE_REGISTRY_PASSWORD}" \
 		-e PARTITION_SIZE="${PARTITION_SIZE}" \
 		-e FS_BLOCK_SIZE="${FS_BLOCK_SIZE}" \
-		-v /sys/fs/cgroup:/sys/fs/cgroup:ro -v ${B}:/build \
+                ${CONTAINER_CGROUPS_PATH} \
+		-v ${B}:/build \
 		--name ${_container_name} ${_image_name}
-	$DOCKER rmi ${_image_name}
+	${ENGINE_CLIENT} rmi ${_image_name}
 }
 
 FILES_${PN} = "/usr/lib/balena/balena-healthcheck-image.tar"

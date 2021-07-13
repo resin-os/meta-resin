@@ -2,12 +2,6 @@
 
 set -o errexit
 
-# We force the PATH to be the standard linux path in order to use the host's
-# docker daemon instead of the result of docker-native. This avoids version
-# mismatches
-HOST_PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-DOCKER=$(PATH="$HOST_PATH" which docker)
-
 sysroot="/"
 tmpdir=""
 fstype="ext4"
@@ -39,10 +33,10 @@ if ! [ -f "$output" ]; then
 fi
 
 cleanup_docker() {
-    $DOCKER rmi @IMAGE@ || true
+    ${ENGINE_CLIENT} rmi @IMAGE@ || true
 }
 
-$DOCKER load -i "$sysroot/usr/share/mkfs-hostapp-image.tar"
+${ENGINE_CLIENT} load -i "$sysroot/usr/share/mkfs-hostapp-image.tar"
 trap cleanup_docker EXIT
 
-$DOCKER run --privileged --rm -v "$input:/input:ro" -v "$tmpdir:$tmpdir:ro" -v "$output:/output" -e "PATH=$PATH:$HOST_PATH" @IMAGE@ create.${fstype}
+${ENGINE_CLIENT} run --privileged --rm -v "$input:/input:ro" -v "$tmpdir:$tmpdir:ro" -v "$output:/output" -e "PATH=$PATH"  @IMAGE@ /usr/bin/create.${fstype}
