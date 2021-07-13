@@ -6,8 +6,6 @@ After=resin-boot.service bind-etc-NetworkManager-system-connections.service
 [Service]
 ExecStart=@BASE_BINDIR@/bash @BINDIR@/balena-net-config
 Type=oneshot
-RemainAfterExit=yes
-StandardError=journal+console
 
 [Install]
 WantedBy=multi-user.target

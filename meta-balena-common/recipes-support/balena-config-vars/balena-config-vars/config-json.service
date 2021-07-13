@@ -1,6 +1,6 @@
 [Unit]
 Description=Config.json watcher service
-Wants=prepare-openvpn.service balena-ntp-config.service
+Wants=prepare-openvpn.service balena-ntp-config.service balena-net-config.service
 
 [Service]
 Type=oneshot
