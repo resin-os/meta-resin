@@ -127,7 +127,7 @@ read_only_rootfs_hook_append () {
 }
 
 # Generate the boot partition directory and deploy it to rootfs
-resin_boot_dirgen_and_deploy () {
+do_resin_boot_dirgen_and_deploy () {
     echo "Generating work directory for resin-boot partition..."
     rm -rf ${BALENA_BOOT_WORKDIR}
     for BALENA_BOOT_PARTITION_FILE in ${BALENA_BOOT_PARTITION_FILES}; do
@@ -369,11 +369,13 @@ ROOTFS_POSTPROCESS_COMMAND += " \
     generate_compressed_kernel_module_deps ; \
     add_image_flag_file ; \
     os_release_extra_data ; \
-    resin_boot_dirgen_and_deploy ; \
     resin_root_quirks ; \
     resin_boot_sanity_handler ; \
     balena_udev_rules_sanity_handler ; \
     "
+
+addtask resin_boot_dirgen_and_deploy after do_image_docker before do_image_balenaos_img
+
 IMAGE_POSTPROCESS_COMMAND =+ " \
     deploy_image_license_manifest ; \
     fix_hddimg_symlink ; \
