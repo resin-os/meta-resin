@@ -34,11 +34,11 @@ module.exports = {
     await this.context.get().utils.waitUntil(async () => {
       return (
         (await this.context.get().worker.executeCommandInHostOS(
-          `systemctl status rollback-health.service`,
+          `systemctl is-active rollback-health.service`,
           this.context.get().link,
         )) !== 'active'
       );
-    }, true);
+    }, false);
 
     test.is(
       await this.context.get().worker.executeCommandInHostOS(
