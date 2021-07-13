@@ -1,0 +1,10 @@
+[Unit]
+Description=dnsmasq.servers path watch
+Requires=resin-boot.service
+After=resin-boot.service
+
+[Path]
+PathChanged=/run/dnsmasq.servers
+
+[Install]
+WantedBy=basic.target
